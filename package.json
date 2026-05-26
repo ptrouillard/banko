@@ -1,0 +1,13 @@
+{
+  "name": "banquo",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start:backend": "cd backend && nvm use 22 && npm run dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "start": "npm run start:backend & npm run start:frontend",
+    "stop:backend": "cd backend && npm stop",
+    "stop:frontend": "cd frontend && npm stop",
+    "stop": "npm run stop:backend && npm run stop:frontend"
+  }
+}

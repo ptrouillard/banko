@@ -5,7 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "stop": "lsof -ti :4000 | xargs kill -9 || true"
+  },
+  "engines": {
+    "node": "^22.0.0"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
