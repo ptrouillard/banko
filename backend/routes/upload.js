@@ -66,8 +66,10 @@ function parseRowsFromCA(rows) {
 
   const dateKey = normalizedHeaders.findIndex((key) => key === 'date');
   const libelleKey = normalizedHeaders.findIndex((key) => key === 'libelle');
-  const debitKey = normalizedHeaders.findIndex((key) => key === 'debit' || key === 'montant debit' || key === 'montant debite');
-  const creditKey = normalizedHeaders.findIndex((key) => key === 'credit' || key === 'montant credit' || key === 'montant credite');
+  const DEBIT_HEADERS = ['debit', 'debit euros', 'montant debit', 'montant debite', 'debit euro'];
+  const CREDIT_HEADERS = ['credit', 'credit euros', 'montant credit', 'montant credite', 'credit euro'];
+  const debitKey = normalizedHeaders.findIndex((key) => DEBIT_HEADERS.includes(key));
+  const creditKey = normalizedHeaders.findIndex((key) => CREDIT_HEADERS.includes(key));
 
   if (dateKey === -1 || libelleKey === -1) {
     return { error: 'format de fichier non supporté pour le moment' };
@@ -127,11 +129,15 @@ router.post('/', upload.single('file'), (req, res) => {
     let minDate = null;
     let maxDate = null;
 
-    const insert = db.prepare(`INSERT OR IGNORE INTO data
-      (date, libelle, debit, credit, date_import)
-      VALUES (?, ?, ?, ?, ?)`);
+    const insert = db.prepare(`
+      INSERT INTO data (date, libelle, debit, credit, date_import)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(date, libelle) DO UPDATE SET
+        debit = CASE WHEN data.debit = 0 THEN excluded.debit ELSE data.debit END,
+        credit = CASE WHEN data.credit = 0 THEN excluded.credit ELSE data.credit END
+    `);
 
-    const getExisting = db.prepare('SELECT COUNT(*) AS count FROM data WHERE date = ? AND libelle = ?');
+    const getExisting = db.prepare('SELECT debit, credit FROM data WHERE date = ? AND libelle = ?');
     const now = new Date().toISOString();
 
     // Mise à jour de la table mois après import
@@ -150,7 +156,8 @@ router.post('/', upload.single('file'), (req, res) => {
       }
 
       const existing = getExisting.get(normalizedDate, libelle);
-      if (existing?.count > 0) {
+      // Doublon réel : la ligne existe et a déjà des montants corrects
+      if (existing && (existing.debit !== 0 || existing.credit !== 0)) {
         duplicates += 1;
         continue;
       }

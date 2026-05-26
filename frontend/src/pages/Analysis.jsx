@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   fetchMonths, fetchSummary, fetchReceipts, fetchExpenses,
   updateCategory, fetchCategorySuggestions,
@@ -74,6 +75,11 @@ function PieChart({ debit, credit }) {
 
 function Analysis() {
   const { t } = useTranslation();
+  const { pathname } = useLocation();
+  const view = pathname === '/analysis/depenses' ? 'depenses'
+    : pathname === '/analysis/recettes' ? 'recettes'
+    : 'summary';
+
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [summary, setSummary] = useState(null);
@@ -137,9 +143,13 @@ function Analysis() {
     ? { debit: summary.total_debit, credit: summary.total_credit }
     : null, [summary]);
 
+  const pageTitle = view === 'depenses' ? 'Dépenses'
+    : view === 'recettes' ? 'Recettes'
+    : t('analysis');
+
   return (
     <div className="page">
-      <h2>{t('analysis')}</h2>
+      <h2>{pageTitle}</h2>
       {error && <div className="error">{error}</div>}
 
       <div className="card">
@@ -152,89 +162,114 @@ function Analysis() {
         </select>
       </div>
 
-      {summary && (
+      {view === 'summary' && summary && (
         <div className="card summary-card">
           <h3>{t('summaryTitle')}</h3>
           {pieData && <PieChart debit={pieData.debit} credit={pieData.credit} />}
         </div>
       )}
 
-      <div className="card table-card">
-        <h3>{t('receiptsTable')}</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>{t('libelle') || 'Libellé'}</th>
-              <th>{t('amount') || 'Montant'}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {receipts.map((row) => (
-              <tr key={row.id}>
-                <td>{row.date}</td>
-                <td>{row.libelle}</td>
-                <td>{row.amount.toFixed(2)} €</td>
+      {view === 'recettes' && (
+        <div className="card table-card">
+          <h3>{t('receiptsTable')}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>{t('libelle') || 'Libellé'}</th>
+                <th style={{ textAlign: 'right' }}>{t('amount') || 'Montant'}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {receipts.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.date}</td>
+                  <td>{row.libelle}</td>
+                  <td style={{ textAlign: 'right' }}>{row.amount.toFixed(2)} €</td>
+                </tr>
+              ))}
+            </tbody>
+            {receipts.length > 0 && (
+              <tfoot>
+                <tr className="total-row">
+                  <td colSpan={2}>Total recettes</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {receipts.reduce((sum, r) => sum + r.amount, 0).toFixed(2)} €
+                  </td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      )}
 
-      <div className="card table-card">
-        <h3>{t('expensesTable')}</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>{t('libelle') || 'Libellé'}</th>
-              <th>{t('amount') || 'Montant'}</th>
-              <th>{t('category')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((row) => (
-              <tr key={row.id}>
-                <td>{row.date}</td>
-                <td>{row.libelle}</td>
-                <td>{row.amount.toFixed(2)} €</td>
-                <td style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    value={row.categorie || ''}
-                    onChange={(e) => handleCategoryChange(row.id, e.target.value)}
-                    onKeyDown={async (e) => {
-                      if (e.key === 'Enter') {
-                        await saveCategory(row.id, row.categorie || '');
-                      }
-                    }}
-                  />
-                  {suggestions[row.id] && suggestions[row.id].length > 0 && (
-                    <div className="suggestions">
-                      {suggestions[row.id].map((suggestion) => (
-                        <button
-                          type="button"
-                          key={suggestion}
-                          onClick={async () => {
-                            setExpenses((current) =>
-                              current.map((item) =>
-                                item.id === row.id ? { ...item, categorie: suggestion } : item
-                              )
-                            );
-                            await saveCategory(row.id, suggestion);
-                          }}
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </td>
+      {view === 'depenses' && (
+        <div className="card table-card">
+          <h3>{t('expensesTable')}</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>{t('libelle') || 'Libellé'}</th>
+                <th style={{ textAlign: 'right' }}>{t('amount') || 'Montant'}</th>
+                <th>{t('category')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {expenses.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.date}</td>
+                  <td>{row.libelle}</td>
+                  <td style={{ textAlign: 'right' }}>{row.amount.toFixed(2)} €</td>
+                  <td style={{ position: 'relative' }}>
+                    <input
+                      type="text"
+                      value={row.categorie || ''}
+                      onChange={(e) => handleCategoryChange(row.id, e.target.value)}
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          await saveCategory(row.id, row.categorie || '');
+                        }
+                      }}
+                    />
+                    {suggestions[row.id] && suggestions[row.id].length > 0 && (
+                      <div className="suggestions">
+                        {suggestions[row.id].map((suggestion) => (
+                          <button
+                            type="button"
+                            key={suggestion}
+                            onClick={async () => {
+                              setExpenses((current) =>
+                                current.map((item) =>
+                                  item.id === row.id ? { ...item, categorie: suggestion } : item
+                                )
+                              );
+                              await saveCategory(row.id, suggestion);
+                            }}
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            {expenses.length > 0 && (
+              <tfoot>
+                <tr className="total-row">
+                  <td colSpan={2}>Total dépenses</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {expenses.reduce((sum, r) => sum + r.amount, 0).toFixed(2)} €
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      )}
     </div>
   );
 }

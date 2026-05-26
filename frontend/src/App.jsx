@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import Analysis from './pages/Analysis.jsx';
@@ -41,12 +41,18 @@ function AppInner() {
       <aside className="sidebar">
         <div className="brand">{t('appName')}</div>
         <nav>
-          <Link to="/">{t('import')}</Link>
-          <Link to="/analysis">{t('analysis')}</Link>
-          <Link to="/categories">Catégories</Link>
-          <Link to="/settings">Paramétrage</Link>
-          <Link to="/language">{t('language')}</Link>
-          <Link to="/data">Données</Link>
+          <NavLink to="/" end>{t('import')}</NavLink>
+          <div className="nav-group">
+            <NavLink to="/analysis" end>{t('analysis')}</NavLink>
+            <div className="subnav">
+              <NavLink to="/analysis/depenses">Dépenses</NavLink>
+              <NavLink to="/analysis/recettes">Recettes</NavLink>
+            </div>
+          </div>
+          <NavLink to="/categories">Catégories</NavLink>
+          <NavLink to="/settings">Paramétrage</NavLink>
+          <NavLink to="/language">{t('language')}</NavLink>
+          <NavLink to="/data">Données</NavLink>
           <button className="link-button" onClick={logout}>{t('logout')}</button>
         </nav>
       </aside>
@@ -57,6 +63,8 @@ function AppInner() {
         <Routes>
           <Route path="/" element={<UploadPage />} />
           <Route path="/analysis" element={<Analysis />} />
+          <Route path="/analysis/depenses" element={<Analysis />} />
+          <Route path="/analysis/recettes" element={<Analysis />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/language" element={<Language />} />
