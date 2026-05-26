@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo } from 'react';
 
 const translations = {
   fr: {
-    appName: 'Banquo',
+    appName: 'Banko',
     import: 'Import',
     analysis: 'Analyse du budget',
     language: 'Langue',
@@ -46,7 +46,7 @@ const translations = {
     amount: 'Montant',
   },
   en: {
-    appName: 'Banquo',
+    appName: 'Banko',
     import: 'Upload',
     analysis: 'Budget analysis',
     language: 'Language',
