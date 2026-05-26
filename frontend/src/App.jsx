@@ -4,6 +4,9 @@ import Login from './pages/Login.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import Analysis from './pages/Analysis.jsx';
 import Language from './pages/Language.jsx';
+import Categories from './pages/Categories.jsx';
+import Settings from './pages/Settings.jsx';
+import DataControl from './pages/DataControl.jsx';
 import { I18nProvider, useTranslation } from './i18n.js';
 
 function AppInner() {
@@ -40,7 +43,10 @@ function AppInner() {
         <nav>
           <Link to="/">{t('import')}</Link>
           <Link to="/analysis">{t('analysis')}</Link>
+          <Link to="/categories">Catégories</Link>
+          <Link to="/settings">Paramétrage</Link>
           <Link to="/language">{t('language')}</Link>
+          <Link to="/data">Données</Link>
           <button className="link-button" onClick={logout}>{t('logout')}</button>
         </nav>
       </aside>
@@ -51,7 +57,10 @@ function AppInner() {
         <Routes>
           <Route path="/" element={<UploadPage />} />
           <Route path="/analysis" element={<Analysis />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/language" element={<Language />} />
+          <Route path="/data" element={<DataControl />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -61,7 +70,6 @@ function AppInner() {
 
 export default function App() {
   const [lang, setLang] = useState(localStorage.getItem('banquo_lang') || 'fr');
-
   return (
     <I18nProvider lang={lang} setLang={(next) => {
       localStorage.setItem('banquo_lang', next);

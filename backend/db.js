@@ -6,15 +6,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DB_FILE || path.join(__dirname, 'banquo.sqlite');
 const db = new Database(dbPath);
 
-const createUsers = `
+db.exec(`
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);`;
+);`);
 
-const createData = `
+db.exec(`
 CREATE TABLE IF NOT EXISTS data (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   date TEXT NOT NULL,
@@ -24,12 +24,22 @@ CREATE TABLE IF NOT EXISTS data (
   date_import TEXT NOT NULL,
   categorie TEXT,
   UNIQUE(date, libelle)
-);`;
+);`);
 
-const createCategoryIndex = `CREATE INDEX IF NOT EXISTS idx_data_categorie ON data(categorie);`;
+db.exec(`CREATE INDEX IF NOT EXISTS idx_data_categorie ON data(categorie);`);
 
-db.exec(createUsers);
-db.exec(createData);
-db.exec(createCategoryIndex);
+// Table mois : liste des mois présents dans les données importées
+db.exec(`
+CREATE TABLE IF NOT EXISTS mois (
+  mois TEXT PRIMARY KEY  -- format YYYY-MM
+);`);
+
+// Table categories : libellé unique + pattern de détection automatique
+db.exec(`
+CREATE TABLE IF NOT EXISTS categories (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  libelle TEXT UNIQUE NOT NULL,
+  pattern TEXT DEFAULT ''
+);`);
 
 export default db;

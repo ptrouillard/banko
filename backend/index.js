@@ -5,6 +5,7 @@ import authRouter from './routes/auth.js';
 import uploadRouter from './routes/upload.js';
 import analysisRouter from './routes/analysis.js';
 import categoriesRouter from './routes/categories.js';
+import dataRouter from './routes/data.js';
 import { authMiddleware } from './middleware/auth.js';
 
 dotenv.config();
@@ -19,7 +20,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/upload', authMiddleware, uploadRouter);
 app.use('/api/analysis', authMiddleware, analysisRouter);
 app.use('/api/categories', authMiddleware, categoriesRouter);
-
+app.use('/api/data', authMiddleware, dataRouter);
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 
 app.listen(port, () => {
