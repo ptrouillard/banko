@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { uploadFile } from '../api.js';
+import { useTranslation } from '../i18n.js';
 
 function UploadPage() {
+  const { t } = useTranslation();
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -10,7 +12,7 @@ function UploadPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!file) {
-      setError('Veuillez sélectionner un fichier Excel');
+      setError(t('selectFile'));
       return;
     }
 
@@ -20,7 +22,7 @@ function UploadPage() {
       const response = await uploadFile(file);
       setResult(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de l’import');
+      setError(err.response?.data?.error || t('importError'));
     } finally {
       setLoading(false);
     }
@@ -28,19 +30,19 @@ function UploadPage() {
 
   return (
     <div className="page">
-      <h2>Importer un fichier</h2>
+      <h2>{t('uploadTitle')}</h2>
       <form onSubmit={handleSubmit} className="card upload-card">
         <input type="file" accept=".xlsx,.xls" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-        <button type="submit" disabled={loading}>{loading ? 'Import en cours…' : 'Importer'}</button>
+        <button type="submit" disabled={loading}>{loading ? t('importing') : t('importButton')}</button>
         {error && <div className="error">{error}</div>}
       </form>
       {result && (
         <div className="card summary-card">
-          <h3>Résultat de l’import</h3>
-          <p>Lignes importées : <strong>{result.imported}</strong></p>
-          <p>Lignes déjà présentes : <strong>{result.duplicates}</strong></p>
-          <p>Première date : <strong>{result.firstDate || 'N/A'}</strong></p>
-          <p>Dernière date : <strong>{result.lastDate || 'N/A'}</strong></p>
+          <h3>{t('importResult')}</h3>
+          <p>{t('importedRows')} : <strong>{result.imported}</strong></p>
+          <p>{t('duplicateRows')} : <strong>{result.duplicates}</strong></p>
+          <p>{t('firstDate')} : <strong>{result.firstDate || 'N/A'}</strong></p>
+          <p>{t('lastDate')} : <strong>{result.lastDate || 'N/A'}</strong></p>
         </div>
       )}
     </div>

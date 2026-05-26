@@ -3,9 +3,12 @@ import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import Analysis from './pages/Analysis.jsx';
+import Language from './pages/Language.jsx';
+import { I18nProvider, useTranslation } from './i18n.js';
 
-function App() {
+function AppInner() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [user, setUser] = useState(localStorage.getItem('banquo_user'));
 
   useEffect(() => {
@@ -33,20 +36,22 @@ function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand">Banquo</div>
+        <div className="brand">{t('appName')}</div>
         <nav>
-          <Link to="/">Import</Link>
-          <Link to="/analysis">Analyse du budget</Link>
-          <button className="link-button" onClick={logout}>Déconnexion</button>
+          <Link to="/">{t('import')}</Link>
+          <Link to="/analysis">{t('analysis')}</Link>
+          <Link to="/language">{t('language')}</Link>
+          <button className="link-button" onClick={logout}>{t('logout')}</button>
         </nav>
       </aside>
       <main className="content">
         <header className="topbar">
-          <div>Connecté en tant que <strong>{user}</strong></div>
+          <div>{t('loggedAs')} <strong>{user}</strong></div>
         </header>
         <Routes>
           <Route path="/" element={<UploadPage />} />
           <Route path="/analysis" element={<Analysis />} />
+          <Route path="/language" element={<Language />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -54,4 +59,15 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  const [lang, setLang] = useState(localStorage.getItem('banquo_lang') || 'fr');
+
+  return (
+    <I18nProvider lang={lang} setLang={(next) => {
+      localStorage.setItem('banquo_lang', next);
+      setLang(next);
+    }}>
+      <AppInner />
+    </I18nProvider>
+  );
+}

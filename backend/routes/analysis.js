@@ -7,7 +7,8 @@ router.get('/months', (req, res) => {
   const rows = db.prepare(`
     SELECT DISTINCT substr(date, 1, 7) AS month
     FROM data
-    WHERE date <> ''
+    WHERE date LIKE '____-__-%'
+      AND substr(date, 6, 2) BETWEEN '01' AND '12'
     ORDER BY month DESC
   `).all();
   return res.json(rows.map((row) => row.month));

@@ -10,6 +10,26 @@ function normalizeHeader(value) {
   return String(value || '').toLowerCase().trim().normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/\s+/g, ' ');
 }
 
+function normalizeDate(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  // Try native parse
+  const d = new Date(s);
+  if (!Number.isNaN(d.getTime())) {
+    return d.toISOString().slice(0, 10);
+  }
+  // DD/MM/YYYY or D/M/YYYY or DD-MM-YYYY
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:[ T].*)?$/);
+  if (m) {
+    let day = m[1].padStart(2, '0');
+    let month = m[2].padStart(2, '0');
+    let year = m[3];
+    if (year.length === 2) year = '20' + year;
+    return `${year}-${month}-${day}`;
+  }
+  return '';
+}
+
 function parseNumber(value) {
   if (value === undefined || value === null || value === '') return 0;
   const normalized = String(value).replace(/\s/g, '').replace(',', '.');
@@ -60,23 +80,29 @@ router.post('/', upload.single('file'), (req, res) => {
     return res.status(400).json({ error: 'Fichier manquant' });
   }
 
-  const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+  try {
+    console.log('[import] fichier reçu:', req.file.originalname, 'taille:', req.file.size);
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
-  const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
-  const fileText = rawRows.flat().join(' ').toUpperCase();
-  const creditAgricoleCount = (fileText.match(/CREDIT AGRICOLE/g) || []).length;
+    const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+    const fileText = rawRows.flat().join(' ').toUpperCase();
+    const creditAgricoleCount = (fileText.match(/CREDIT AGRICOLE/g) || []).length;
+    console.log('[import] occurrences "CREDIT AGRICOLE":', creditAgricoleCount);
 
-  if (creditAgricoleCount <= 10) {
-    return res.status(400).json({ error: 'format de fichier non supporté pour le moment' });
-  }
+    if (creditAgricoleCount <= 10) {
+      console.log('[import] format non supporté (peu d\'occurrences CREDIT AGRICOLE)');
+      return res.status(400).json({ error: 'format de fichier non supporté pour le moment' });
+    }
 
-  const parseResult = parseRowsFromCA(rawRows);
-  if (parseResult.error) {
-    return res.status(400).json({ error: parseResult.error });
-  }
+    const parseResult = parseRowsFromCA(rawRows);
+    if (parseResult.error) {
+      console.log('[import] erreur parsing CA:', parseResult.error);
+      return res.status(400).json({ error: parseResult.error });
+    }
 
-  const rows = parseResult.rows;
+    const rows = parseResult.rows;
+    console.log('[import] lignes extraites après parsing:', rows.length);
   let imported = 0;
   let duplicates = 0;
   let minDate = null;
@@ -88,33 +114,43 @@ router.post('/', upload.single('file'), (req, res) => {
   const getExisting = db.prepare('SELECT COUNT(*) AS count FROM data WHERE date = ? AND libelle = ?');
   const now = new Date().toISOString();
 
-  for (const raw of rows) {
+    console.log('[import] démarrage insertion en base, total:', rows.length);
+    for (const raw of rows) {
     const date = raw.date;
     const libelle = String(raw.libelle).trim();
     if (!date || !libelle) continue;
 
-    const existing = getExisting.get(date, libelle);
+    const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) continue;
+
+    const existing = getExisting.get(normalizedDate, libelle);
     if (existing?.count > 0) {
       duplicates += 1;
+      if (duplicates % 100 === 0) console.log('[import] doublon détecté, total jusqu\'ici:', duplicates);
       continue;
     }
 
-    insert.run(date, libelle, raw.debit, raw.credit, now);
+    insert.run(normalizedDate, libelle, raw.debit, raw.credit, now);
     imported += 1;
 
-    const current = new Date(date);
+    const current = new Date(normalizedDate);
     if (!Number.isNaN(current.getTime())) {
       if (!minDate || current < minDate) minDate = current;
       if (!maxDate || current > maxDate) maxDate = current;
     }
   }
 
-  return res.json({
-    imported,
-    duplicates,
-    firstDate: minDate ? minDate.toISOString().slice(0, 10) : null,
-    lastDate: maxDate ? maxDate.toISOString().slice(0, 10) : null,
-  });
+    console.log('[import] terminé. importés:', imported, 'doublons:', duplicates);
+    return res.json({
+      imported,
+      duplicates,
+      firstDate: minDate ? minDate.toISOString().slice(0, 10) : null,
+      lastDate: maxDate ? maxDate.toISOString().slice(0, 10) : null,
+    });
+  } catch (err) {
+    console.error('[import] erreur inattendue:', err && err.stack ? err.stack : err);
+    return res.status(500).json({ error: 'Erreur lors de l\'import' });
+  }
 });
 
 export default router;

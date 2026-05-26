@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchMonths, fetchSummary, fetchReceipts, fetchExpenses, updateCategory, fetchCategorySuggestions } from '../api.js';
+import { useTranslation } from '../i18n.js';
 
 function Analysis() {
+  const { t } = useTranslation();
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState('');
   const [summary, setSummary] = useState(null);
@@ -11,8 +13,17 @@ function Analysis() {
   const [suggestions, setSuggestions] = useState({});
 
   useEffect(() => {
-    fetchMonths().then((res) => setMonths(res.data)).catch(() => setError('Impossible de récupérer les mois')); 
-  }, []);
+    const validMonthPattern = /^\d{4}-(0[1-9]|1[0-2])$/;
+    fetchMonths()
+      .then((res) => {
+        const validMonths = Array.isArray(res.data) ? res.data.filter((month) => validMonthPattern.test(month)) : [];
+        setMonths(validMonths);
+        if (validMonths.length > 0) {
+          setSelectedMonth((current) => current || validMonths[0]);
+        }
+      })
+      .catch(() => setError(t('fetchMonthsError')));
+  }, [t]);
 
   useEffect(() => {
     if (!selectedMonth) return;
@@ -22,8 +33,18 @@ function Analysis() {
         setReceipts(receiptsRes.data);
         setExpenses(expensesRes.data);
       })
-      .catch(() => setError('Erreur lors du chargement des données du mois'));
-  }, [selectedMonth]);
+      .catch(() => setError(t('fetchMonthDataError')));
+  }, [selectedMonth, t]);
+
+  const formatMonthLabel = (month) => {
+    const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(month);
+    if (!match) return month;
+    const year = Number(match[1]);
+    const monthIndex = Number(match[2]) - 1;
+    const d = new Date(Date.UTC(year, monthIndex, 1));
+    const label = d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+    return label.charAt(0).toUpperCase() + label.slice(1);
+  };
 
   const handleCategoryChange = async (id, value) => {
     if (value.length < 1) return;
@@ -50,36 +71,36 @@ function Analysis() {
 
   return (
     <div className="page">
-      <h2>Analyse du budget</h2>
+      <h2>{t('analysis')}</h2>
       {error && <div className="error">{error}</div>}
       <div className="card">
-        <label>Mois</label>
+        <label>{t('selectMonth')}</label>
         <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-          <option value="">Sélectionnez un mois</option>
+          <option value="">{t('chooseMonth')}</option>
           {months.map((month) => (
-            <option key={month} value={month}>{month}</option>
+            <option key={month} value={month}>{formatMonthLabel(month)}</option>
           ))}
         </select>
       </div>
 
       {summary && (
         <div className="card summary-card">
-          <h3>Recettes / Dépenses</h3>
+          <h3>{t('summaryTitle')}</h3>
           <div className="summary-row">
-            <div>Dépenses&nbsp;: <strong>{summary.total_debit.toFixed(2)} €</strong></div>
-            <div>Recettes&nbsp;: <strong>{summary.total_credit.toFixed(2)} €</strong></div>
+            <div>{t('expenses')}&nbsp;: <strong>{summary.total_debit.toFixed(2)} €</strong></div>
+            <div>{t('receipts')}&nbsp;: <strong>{summary.total_credit.toFixed(2)} €</strong></div>
           </div>
           <div className="chart-placeholder">
-            <div>Graphique camembert disponible ici plus tard</div>
+            <div>{t('chartPlaceholder')}</div>
           </div>
         </div>
       )}
 
       <div className="card table-card">
-        <h3>Répartition recettes</h3>
+        <h3>{t('receiptsTable')}</h3>
         <table>
           <thead>
-            <tr><th>Date</th><th>Libellé</th><th>Montant</th></tr>
+            <tr><th>Date</th><th>{t('libelle') || 'Libellé'}</th><th>{t('amount') || 'Montant'}</th></tr>
           </thead>
           <tbody>
             {receipts.map((row) => (
@@ -94,10 +115,10 @@ function Analysis() {
       </div>
 
       <div className="card table-card">
-        <h3>Répartition dépenses</h3>
+        <h3>{t('expensesTable')}</h3>
         <table>
           <thead>
-            <tr><th>Date</th><th>Libellé</th><th>Montant</th><th>Catégorie</th></tr>
+            <tr><th>Date</th><th>{t('libelle') || 'Libellé'}</th><th>{t('amount') || 'Montant'}</th><th>{t('category')}</th></tr>
           </thead>
           <tbody>
             {expenses.map((row) => (

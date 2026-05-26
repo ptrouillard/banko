@@ -1,0 +1,115 @@
+import React, { createContext, useContext, useMemo } from 'react';
+
+const translations = {
+  fr: {
+    appName: 'Banquo',
+    import: 'Import',
+    analysis: 'Analyse du budget',
+    language: 'Langue',
+    logout: 'Déconnexion',
+    loggedAs: 'Connecté en tant que',
+    uploadTitle: 'Importer un fichier',
+    selectFile: 'Veuillez sélectionner un fichier Excel',
+    importButton: 'Importer',
+    importing: 'Import en cours…',
+    importResult: 'Résultat de l’import',
+    importedRows: 'Lignes importées',
+    duplicateRows: 'Lignes déjà présentes',
+    firstDate: 'Première date',
+    lastDate: 'Dernière date',
+    summaryTitle: 'Recettes / Dépenses',
+    expenses: 'Dépenses',
+    receipts: 'Recettes',
+    chartPlaceholder: 'Graphique camembert disponible ici plus tard',
+    selectMonth: 'Mois',
+    chooseMonth: 'Sélectionnez un mois',
+    receiptsTable: 'Répartition recettes',
+    expensesTable: 'Répartition dépenses',
+    category: 'Catégorie',
+    saveLanguage: 'La langue est sauvegardée localement.',
+    chooseLanguage: "Sélectionnez la langue de l'interface :",
+    french: 'Français',
+    english: 'English',
+    login: 'Connexion',
+    createAccount: 'Créer un compte',
+    username: 'Pseudo',
+    password: 'Mot de passe',
+    create: 'Créer',
+    alreadyAccount: 'J’ai déjà un compte',
+    noAccount: 'Créer un compte',
+    invalidToken: 'Token invalide',
+    unsupportedFormat: 'format de fichier non supporté pour le moment',
+    importError: 'Erreur lors de l’import',
+    fetchMonthsError: 'Impossible de récupérer les mois',
+    fetchMonthDataError: 'Erreur lors du chargement des données du mois',
+    libelle: 'Libellé',
+    amount: 'Montant',
+  },
+  en: {
+    appName: 'Banquo',
+    import: 'Upload',
+    analysis: 'Budget analysis',
+    language: 'Language',
+    logout: 'Logout',
+    loggedAs: 'Logged in as',
+    uploadTitle: 'Import a file',
+    selectFile: 'Please select an Excel file',
+    importButton: 'Upload',
+    importing: 'Uploading…',
+    importResult: 'Import result',
+    importedRows: 'Rows imported',
+    duplicateRows: 'Rows already present',
+    firstDate: 'First date',
+    lastDate: 'Last date',
+    summaryTitle: 'Income / Expenses',
+    expenses: 'Expenses',
+    receipts: 'Income',
+    chartPlaceholder: 'Pie chart coming here later',
+    selectMonth: 'Month',
+    chooseMonth: 'Select a month',
+    receiptsTable: 'Income breakdown',
+    expensesTable: 'Expense breakdown',
+    category: 'Category',
+    saveLanguage: 'Language is saved locally.',
+    chooseLanguage: 'Choose the interface language:',
+    french: 'Français',
+    english: 'English',
+    login: 'Login',
+    createAccount: 'Create account',
+    username: 'Username',
+    password: 'Password',
+    create: 'Create',
+    alreadyAccount: 'I already have an account',
+    noAccount: 'Create an account',
+    invalidToken: 'Invalid token',
+    unsupportedFormat: 'file format not supported at the moment',
+    importError: 'Error while importing',
+    fetchMonthsError: 'Unable to fetch months',
+    fetchMonthDataError: 'Error loading month data',
+    libelle: 'Label',
+    amount: 'Amount',
+  },
+};
+
+const I18nContext = createContext({
+  lang: 'fr',
+  setLang: () => {},
+  t: (key) => key,
+});
+
+export function I18nProvider({ lang, setLang, children }) {
+  const value = useMemo(
+    () => ({
+      lang,
+      setLang,
+      t: (key) => translations[lang]?.[key] || translations.fr[key] || key,
+    }),
+    [lang, setLang]
+  );
+
+  return React.createElement(I18nContext.Provider, { value }, children);
+}
+
+export function useTranslation() {
+  return useContext(I18nContext);
+}

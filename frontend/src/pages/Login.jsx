@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, register } from '../api.js';
+import { useTranslation } from '../i18n.js';
 
 function Login({ onLogin }) {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,14 +17,14 @@ function Login({ onLogin }) {
       const response = isRegister ? await register(username, password) : await login(username, password);
       const token = response.data.token;
       if (!token) {
-        throw new Error('Token manquant');
+        throw new Error(t('invalidToken'));
       }
       localStorage.setItem('banquo_token', token);
       localStorage.setItem('banquo_user', username);
       onLogin(username);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de la connexion');
+      setError(err.response?.data?.error || t('importError'));
     }
   };
 
@@ -30,17 +32,17 @@ function Login({ onLogin }) {
     <div className="page page-center">
       <div className="card">
         <h1>Banquo</h1>
-        <p>{isRegister ? 'Créer un compte' : 'Connexion'}</p>
+        <p>{isRegister ? t('createAccount') : t('login')}</p>
         <form onSubmit={handleSubmit}>
-          <label>Pseudo</label>
+          <label>{t('username')}</label>
           <input value={username} onChange={(e) => setUsername(e.target.value)} />
-          <label>Mot de passe</label>
+          <label>{t('password')}</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           {error && <div className="error">{error}</div>}
-          <button type="submit">{isRegister ? 'Créer' : 'Se connecter'}</button>
+          <button type="submit">{isRegister ? t('create') : t('login')}</button>
         </form>
         <button className="secondary" onClick={() => setIsRegister((current) => !current)}>
-          {isRegister ? 'J’ai déjà un compte' : 'Créer un compte'}
+          {isRegister ? t('alreadyAccount') : t('noAccount')}
         </button>
       </div>
     </div>
