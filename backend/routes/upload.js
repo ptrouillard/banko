@@ -136,7 +136,7 @@ router.post('/', upload.single('file'), (req, res) => {
       if (categoryCache.has(libelle)) return categoryCache.get(libelle);
       let cat = db.prepare('SELECT id FROM categories WHERE libelle = ?').get(libelle);
       if (!cat) {
-        const validType = ['depense', 'recette'].includes(type) ? type : null;
+        const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
         const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(libelle, '', validType);
         cat = { id: info.lastInsertRowid };
       }

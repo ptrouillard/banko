@@ -45,7 +45,7 @@ router.post('/apply', (req, res) => {
     }
     const name = String(new_category_name).trim();
     const { type } = req.body;
-    const validType = ['depense', 'recette'].includes(type) ? type : null;
+    const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
     try {
       const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(name, kw, validType);
       catId = info.lastInsertRowid;

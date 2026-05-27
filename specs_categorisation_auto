@@ -2,6 +2,10 @@ Certaines opérations vont être automatiquement catégorisées car elles corres
 je veux que tu regroupes ces règles dans un fichier de règle "regles_CREDIT_AGRICOLE.json"
 on doit pouvoir créer d'autres fichiers de règles par la suite pour les différentes banques.
 
+Note : les règles suivantes devront s'appliquer dans cet ordre, c'est à dire que les règles seront appliquées dans l'ordre de priorité que tu as défini, la règle 1 sera appliquée avant la règle 2 etc...
+Si une opération a déjà été catégorisée par une règle automatique, elle ne sera pas modifiée si elle est "matchée" par une autre règle.
+L'exécution des règles dans l'ordre permet d'éviter des erreurs.
+
 Regle 1
 les paiements par carte suivent la syntaxe suivante :
 Le pattern commence par "PAIEMENT PAR CARTE"
@@ -15,7 +19,7 @@ Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
 - le type : dépense (car c'est un paiement par carte)
 - la date en fin ne sera pas utilisée.
 Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "BOULANGERI LALEC ORV" et le type "dépense".
-Tu créeras également un portefeuille "X9186" et tu associeras cette opération à ce portefeuille. Si tu trouves plusieurs numéros de carte, tu créeras donc autant de portefeuilles qu'il y a de cartes.
+Tu créeras également un portefeuille "CB X9186" et tu associeras cette opération à ce portefeuille. Si tu trouves plusieurs numéros de carte, tu créeras donc autant de portefeuilles qu'il y a de cartes.
 les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
 
 Les catégorisations automatiques auront lieu au moment de l'import donc avant toute catégorisation manuelle.
@@ -63,5 +67,152 @@ Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
 Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Echéances 10003303921" et le type "dépense".
 Les opérations de ce type seront associées au portefeuille "Emprunts", si ce portefeuille n'existe pas tu le créeras.
 les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Regle 6
+les opérations de type "prélévement divers" suivent la syntaxe suivante :
+Le pattern commence par "PRELEVEMENT XYZ" (XYZ peut être n'importe quel mot terminé par un "-")
+exemple : "PRELEVEMENT SEMITAN-STE D'ECONOMIE MIXTE DES SEMITAN/0000212333-20251223152410099/0000212333 0000212333 FR47ZZZ280755 0000212333-20251223152410099"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un prélèvement)
+- le nom de la catégories "SEMITAN" (le tiret joue le rôle de séparateur)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "SEMITAN" et le type "dépense".
+Les opérations de ce type ne seront pas associées à un portefeuille automatiquement.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 7
+les retraits au distributeur suivent la syntaxe suivante :
+La pattern commence par "RETRAIT AU DISTRIBUTEUR"
+exemple : "RETRAIT AU DISTRIBUTEUR ORVAULT PETIT CHANTI 09/01 17H10"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un retrait)
+- le nom de la catégorie "Retrait CB"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Retrait CB" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Retraits liquide", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 8
+Les cotisations suivies la syntaxe suivante :
+Le pattern commence par "COTISATION"
+exemple : "COTISATION Offre Essentiel"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est une cotisation)
+- le nom de la catégorie "Offre Essentiel"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Offre Essentiel" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Frais bancaires", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Regle 9
+les opérations de type "prélévement divers 2" suivent la syntaxe suivante :
+Le pattern commence par "PRELEVEMENT XYZ" (XYZ peut être n'importe quel mot terminé par un espace)
+exemple : "PRELEVEMENT vetassur 51190-Santevet-Pixel 00774519.1 FR11ZZZ489371 51190Santevet/609"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un prélèvement)
+- le nom de la catégories "vetassur" (l'espace joue le rôle de séparateur)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "vetassur" et le type "dépense".
+Les opérations de ce type ne seront pas associées à un portefeuille automatiquement.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 10
+les opérations de type "virements emis" suivent la syntaxe suivante :
+Le pattern commence par "VIREMENT EMIS vers"
+exemple : "VIREMENT EMIS VIR INST vers Compagnie Prosceni Paiement 2026 - Virement 1 - Nelly Cours du lundi"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un virement emis vers un autre compte)
+- le nom de la catégories "Compagnie Prosceni Paiement 2026 - Virement 1 - Nelly Cours du lundi" 
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Compagnie Prosceni Paiement 2026 - Virement 1 - Nelly Cours du lundi" et le type "dépense".
+Les opérations de ce type ne seront pas associées à un portefeuille automatiquement.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import. 
+
+Regle 11
+Les opérations de type "Assurance de prêt" suivent la syntaxe suivante :
+Le pattern commence par "ASSURANCE ASSU."
+exemple : "REGLEMENT ASSU. CAAE PRET HABITAT 03/26" ou "REGLEMENT ASSU. CAAE PRET PERSONNEL 03/26" ou "REGLEMENT ASSU. CNP PRET HABITAT 03/26"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est une assurance de prêt)
+- le nom de la catégorie "CAAE PRET HABITAT" ou "CAAE PRET PERSONNEL" ou "CNP PRET HABITAT" (le nom de la catégorie est situé entre "REGLEMENT ASSU." et la date)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "CAAE PRET HABITAT" ou "CAAE PRET PERSONNEL" ou "CNP PRET HABITAT" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Emprunts", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import. 
+
+
+
+Regle 12
+Les opérations de type "Virements web" suivent la syntaxe suivante :
+Le pattern commence par "VIREMENT EMIS WEB"
+exemple : "VIREMENT EMIS WEB JOHN DOE nouvel appar nouvel appart caution"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un virement emis vers un autre compte)
+- le nom de la catégorie "virement vers JOHN DOE" 
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "virement vers JOHN DOE" et le "type "dépense".
+Les opérations de ce type ne seront pas associées à un portefeuille automatiquement.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import. 
+
+Regle 12.1
+Les opérations de type "Virements divers" suivent la syntaxe suivante :
+Le pattern commence par "VIREMENT EMIS"
+exemple : "VIREMENT EMIS jmel-energie-15-le-g AXO347698 facture-f202601-990-axoTR-347698- AXO347698"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un virement emis vers un autre compte)
+- le nom de la catégorie "virement vers jmel-energie-15-le-g" (le nom de la catégorie est situé après "VIREMENT EMIS")
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "virement vers jmel-energie-15-le-g" et le "type "dépense".
+Les opérations de ce type ne seront pas associées à un portefeuille automatiquement.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import. 
+
+Regle 13
+Les opérations de type "Avoir sur la carte bleue" suivent la syntaxe suivante :
+Le pattern commence par "AVOIR CARTE"
+exemple : "AVOIR CARTE X3666 Citiz Nantes 23/02"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : revenu (car c'est un avoir sur la carte bleue)
+- le nom de la catégorie "Citiz Nantes" (le nom de la catégorie est situé entre le numéro de carte et la date)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Avoir Citiz Nantes" et le type "revenu".
+Les opérations de ce type seront associées au portefeuille "revenus annexes", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Regle 14
+Les opérations de type "Paiements par chèque" suivent la syntaxe suivante :
+Le pattern commence par "CHEQUE EMIS"
+exemple : "CHEQUE EMIS 1394973"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un paiement par chèque)
+- le nom de la catégorie "Cheque 1394973" (le nom de la catégorie est situé après "CHEQUE EMIS")
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Cheque 1394973" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Chèques émis", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 15
+Les opérations de type "Agios" suivent la syntaxe suivante :
+Le pattern commence par "FRAIS Intérets débiteurs"
+exemple : "FRAIS Intérets débiteurs"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est des agios)
+- le nom de la catégorie "Agios" (le nom de la catégorie est situé après "FRAIS Intérets débiteurs")
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Agios" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Frais bancaires", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 16
+Les opérations de type "Intérêts créditeurs" suivent la syntaxe suivante :
+Le pattern commence par "INTERETS CREDITEURS"
+exemple : "INTERETS CREDITEURS PS DE VAL DE CENS"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : revenu (car c'est des intérêts créditeurs)
+- le nom de la catégorie "PS DE VAL DE CENS"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Crédit PS DE VAL DE CENS" et le type "revenu".
+Les opérations de ce type seront associées au portefeuille "revenus annexes", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Regle 17
+Les opérations de type "Souscriptions" suivent la syntaxe suivante :
+Le pattern commence par "SOUSCRIPTION"
+exemple : "SOUSCRIPTION PS DE VAL DE CENS"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est une souscription)
+- le nom de la catégorie "Débit PS DE VAL DE CENS"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Débit PS DE VAL DE CENS" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Investissements", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+
 
 

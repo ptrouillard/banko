@@ -10,7 +10,7 @@ import {
   removeCategoryFromPortefeuille,
 } from '../api.js';
 
-const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes' };
+const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes', interne: 'Interne' };
 
 function PortefeuilleCard({ p, allCategories, onDelete, onRefresh }) {
   const [expanded, setExpanded] = useState(false);

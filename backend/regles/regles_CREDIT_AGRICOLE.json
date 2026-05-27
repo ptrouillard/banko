@@ -8,7 +8,7 @@
       "flags": "i",
       "type": "depense",
       "categorie": { "groupe": 2 },
-      "portefeuille": { "groupe": 1 }
+      "portefeuille": { "template": "CB {1}" }
     },
     {
       "id": "virement_faveur",
@@ -45,6 +45,117 @@
       "type": "depense",
       "categorie": { "template": "Echéances {1}" },
       "portefeuille": { "fixe": "Emprunts" }
+    },
+    {
+      "id": "prelevement_divers",
+      "description": "Prélèvements divers (catégorie extraite avant le tiret)",
+      "regex": "^PRELEVEMENT\\s+([^\\s-]+)-",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 1 }
+    },
+    {
+      "id": "retrait_distributeur",
+      "description": "Retraits au distributeur",
+      "regex": "^RETRAIT AU DISTRIBUTEUR",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "fixe": "Retrait CB" },
+      "portefeuille": { "fixe": "Retraits liquide" }
+    },
+    {
+      "id": "cotisation",
+      "description": "Cotisations bancaires",
+      "regex": "^COTISATION\\s+(.+)$",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 1 },
+      "portefeuille": { "fixe": "Frais bancaires" }
+    },
+    {
+      "id": "prelevement_divers_espace",
+      "description": "Prélèvements divers (catégorie extraite avant l'espace)",
+      "regex": "^PRELEVEMENT\\s+(\\S+)\\s",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 1 }
+    },
+    {
+      "id": "virement_emis_vers",
+      "description": "Virements émis (bénéficiaire extrait après 'vers')",
+      "regex": "^VIREMENT EMIS\\s+.*?\\bvers\\s+(.+)$",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 1 }
+    },
+    {
+      "id": "assurance_pret",
+      "description": "Assurances de prêt (catégorie extraite entre 'REGLEMENT ASSU.' et la date)",
+      "regex": "^REGLEMENT ASSU\\.\\s+(.+?)\\s+\\d{2}\\/\\d{2}\\s*$",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 1 },
+      "portefeuille": { "fixe": "Emprunts" }
+    },
+    {
+      "id": "virement_emis_web",
+      "description": "Virements web (nom en majuscules extrait après 'VIREMENT EMIS WEB')",
+      "regex": "^VIREMENT EMIS WEB\\s+([A-Z][A-Z -]*)",
+      "type": "depense",
+      "categorie": { "template": "virement vers {1}" }
+    },
+    {
+      "id": "virement_emis_divers",
+      "description": "Virements émis divers (catch-all, bénéficiaire extrait après 'VIREMENT EMIS')",
+      "regex": "^VIREMENT EMIS\\s+(\\S+)",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "template": "virement vers {1}" }
+    },
+    {
+      "id": "cheque_emis",
+      "description": "Chèques émis",
+      "regex": "^CHEQUE EMIS\\s+(\\S+)",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "template": "Cheque {1}" },
+      "portefeuille": { "fixe": "Chèques émis" }
+    },
+    {
+      "id": "agios",
+      "description": "Frais / intérêts débiteurs (agios)",
+      "regex": "^FRAIS Int.rets d.biteurs",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "fixe": "Agios" },
+      "portefeuille": { "fixe": "Frais bancaires" }
+    },
+    {
+      "id": "interets_crediteurs",
+      "description": "Intérêts créditeurs",
+      "regex": "^INTERETS CREDITEURS\\s+(.+)",
+      "flags": "i",
+      "type": "recette",
+      "categorie": { "template": "Crédit {1}" },
+      "portefeuille": { "fixe": "Revenus annexes" }
+    },
+    {
+      "id": "souscriptions",
+      "description": "Souscriptions (investissements)",
+      "regex": "^SOUSCRIPTION\\s+(.+)",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "template": "Débit {1}" },
+      "portefeuille": { "fixe": "Investissements" }
+    },
+    {
+      "id": "avoir_carte",
+      "description": "Avoirs sur carte (catégorie extraite entre le numéro de carte et la date)",
+      "regex": "^AVOIR CARTE\\s+X\\d{4}\\s+(.+?)\\s+\\d{1,2}\\/\\d{2}\\s*$",
+      "flags": "i",
+      "type": "recette",
+      "categorie": { "template": "Avoir {1}" },
+      "portefeuille": { "fixe": "Revenus annexes" }
     }
   ]
 }

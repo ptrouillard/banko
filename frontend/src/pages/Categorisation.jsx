@@ -120,7 +120,7 @@ function CategoriModal({ operation, onClose, onSaved }) {
             />
             <label>Type</label>
             <div className="type-radio-group">
-              {[['depense', 'Dépenses'], ['recette', 'Recettes'], ['', '—']].map(([val, label]) => (
+              {[['depense', 'Dépenses'], ['recette', 'Recettes'], ['interne', 'Interne'], ['', '—']].map(([val, label]) => (
                 <label key={val} className="type-radio">
                   <input
                     type="radio"

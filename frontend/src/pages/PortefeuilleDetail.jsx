@@ -3,7 +3,7 @@ import { useParams, useOutletContext, useNavigate } from 'react-router-dom';
 import { fetchPortefeuilleDetail } from '../api.js';
 import { formatMonthLabel } from './Analysis.jsx';
 
-const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes' };
+const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes', interne: 'Interne' };
 
 function PortefeuilleDetail() {
   const { id } = useParams();

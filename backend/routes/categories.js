@@ -31,7 +31,7 @@ router.post('/', (req, res) => {
   if (!libelle || !libelle.trim()) {
     return res.status(400).json({ error: 'Libellé requis' });
   }
-  const validType = ['depense', 'recette'].includes(type) ? type : null;
+  const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
   try {
     const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(
       libelle.trim(),
@@ -57,7 +57,7 @@ router.patch('/:id', (req, res) => {
     params.push(pattern.trim());
   }
   if (type !== undefined) {
-    const validType = ['depense', 'recette'].includes(type) ? type : null;
+    const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
     updates.push('type = ?');
     params.push(validType);
   }

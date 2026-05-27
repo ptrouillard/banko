@@ -9,7 +9,7 @@ import {
   deleteAllCategories,
 } from '../api.js';
 
-const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes' };
+const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes', interne: 'Interne' };
 
 function TypeSelect({ value, onChange }) {
   return (
@@ -17,6 +17,7 @@ function TypeSelect({ value, onChange }) {
       <option value="">—</option>
       <option value="depense">Dépenses</option>
       <option value="recette">Recettes</option>
+      <option value="interne">Interne</option>
     </select>
   );
 }
