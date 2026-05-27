@@ -1,0 +1,67 @@
+Certaines opérations vont être automatiquement catégorisées car elles correspondent à des patterns utilisés par la banque
+je veux que tu regroupes ces règles dans un fichier de règle "regles_CREDIT_AGRICOLE.json"
+on doit pouvoir créer d'autres fichiers de règles par la suite pour les différentes banques.
+
+Regle 1
+les paiements par carte suivent la syntaxe suivante :
+Le pattern commence par "PAIEMENT PAR CARTE"
+ensuite on trouve le numéro de la carte "X9186" (variable) qui suivra toujours ce format : X suivi de 4 chiffres.
+ensuite le libellé du marchand "BOULANGERI LALEC ORV"
+ensuite la date "31/12"
+exemple : "PAIEMENT PAR CARTE X9186 BOULANGERI LALEC ORV 31/12"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type : 
+- le numéro de carte "X9186"
+- le nom de la catégorie "BOULANGERI LALEC ORV"
+- le type : dépense (car c'est un paiement par carte)
+- la date en fin ne sera pas utilisée.
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "BOULANGERI LALEC ORV" et le type "dépense".
+Tu créeras également un portefeuille "X9186" et tu associeras cette opération à ce portefeuille. Si tu trouves plusieurs numéros de carte, tu créeras donc autant de portefeuilles qu'il y a de cartes.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Les catégorisations automatiques auront lieu au moment de l'import donc avant toute catégorisation manuelle.
+L'utilisateur pourra ensuite modifier la catégorisation automatique si il le souhaite, mais par défaut elle sera appliquée.
+
+Regle 2
+les virements reçus suivent la syntaxe suivante :
+Le pattern commence par "VIREMENT EN VOTRE FAVEUR"
+exemple : "VIREMENT EN VOTRE FAVEUR VIR INST WERO de LIDWINE GIMENEZ cadeau Francoise 019e2d14d1dd74978d82e702569ef0e9"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : revenu (car c'est un virement reçu)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "VIREMENT EN VOTRE FAVEUR"
+" et le type "revenu".
+Les opérations de ce type seront associées au portefeuille "revenus annexes", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 3
+les opérations de type "prélévement impots" suivent la syntaxe suivante :
+Le pattern commence par "PRELEVEMENT DIRECTION GENERALE DES FINANCES"
+exemple : "PRELEVEMENT DIRECTION GENERALE DES FINANCES 440521856582235172 222 MENM344012146622052 IMPOT TF NNFR46ZZZ005002M344012146622 FR46ZZZ005002 1E067000044052M344012146622"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un prélèvement)
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "IMPOTS" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Taxes", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.  
+
+Regle 4
+Les opérations de type "Intérêts de prêts" suivent la syntaxe suivante :
+Le pattern commence par "REMBOURSEMENT DE PRET"
+exemple : "REMBOURSEMENT DE PRET 10003303921 05/05/26 INTERETS"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un prélèvement)
+- Le numéro de prêt "10003303921"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Intérêts 10003303921" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Emprunts", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+Regle 5
+Les opérations de type "Echéances de prêts" suivent la syntaxe suivante :
+Le pattern commence par "REMBOURSEMENT DE PRET"
+exemple : "REMBOURSEMENT DE PRET 10001814089 ECHEANCE 05/05/26"
+Si tu suis ce pattern, tu peux extraire de chaque opération de ce type :
+- le type : dépenses (car c'est un prélèvement)
+- Le numéro de prêt "10001814089"
+Quand tu importes cette opération, tu peux automatiquement lui attribuer la catégorie "Echéances 10003303921" et le type "dépense".
+Les opérations de ce type seront associées au portefeuille "Emprunts", si ce portefeuille n'existe pas tu le créeras.
+les opérations qui suivent ce pattern seront automatiquement catégorisées de cette manière lors de l'import.
+
+

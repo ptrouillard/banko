@@ -1,0 +1,50 @@
+{
+  "banque": "CREDIT_AGRICOLE",
+  "regles": [
+    {
+      "id": "paiement_carte",
+      "description": "Paiements par carte bancaire",
+      "regex": "^PAIEMENT PAR CARTE\\s+(X\\d{4})\\s+(.+?)\\s+\\d{1,2}\\/\\d{2}\\s*$",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "groupe": 2 },
+      "portefeuille": { "groupe": 1 }
+    },
+    {
+      "id": "virement_faveur",
+      "description": "Virements reçus",
+      "regex": "^VIREMENT EN VOTRE FAVEUR",
+      "flags": "i",
+      "type": "recette",
+      "categorie": { "fixe": "VIREMENT EN VOTRE FAVEUR" },
+      "portefeuille": { "fixe": "Revenus annexes" }
+    },
+    {
+      "id": "prelevement_impots",
+      "description": "Prélèvements Direction Générale des Finances",
+      "regex": "^PRELEVEMENT DIRECTION GENERALE DES FINANCES",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "fixe": "IMPOTS" },
+      "portefeuille": { "fixe": "Taxes" }
+    },
+    {
+      "id": "remboursement_interets",
+      "description": "Remboursements de prêt - Intérêts",
+      "regex": "^REMBOURSEMENT DE PRET\\s+(\\d+)\\s+\\d{2}\\/\\d{2}\\/\\d{2,4}\\s+INTERETS",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "template": "Intérêts {1}" },
+      "portefeuille": { "fixe": "Emprunts" }
+    },
+    {
+      "id": "remboursement_echeance",
+      "description": "Remboursements de prêt - Échéances",
+      "regex": "^REMBOURSEMENT DE PRET\\s+(\\d+)\\s+ECHEANCE",
+      "flags": "i",
+      "type": "depense",
+      "categorie": { "template": "Echéances {1}" },
+      "portefeuille": { "fixe": "Emprunts" }
+    }
+  ]
+}

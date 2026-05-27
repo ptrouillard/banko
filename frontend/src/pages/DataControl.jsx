@@ -11,6 +11,7 @@ function DataControl() {
   const [searchInput, setSearchInput] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -35,6 +36,19 @@ function DataControl() {
     setSearch(searchInput);
   };
 
+  const handleDeleteAll = async () => {
+    try {
+      await api.delete('/data/all');
+      setRows([]);
+      setTotal(0);
+      setPage(1);
+    } catch {
+      setError('Erreur lors de la suppression');
+    } finally {
+      setShowConfirm(false);
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Supprimer cette ligne ?')) return;
     try {
@@ -50,7 +64,12 @@ function DataControl() {
 
   return (
     <div className="page">
-      <h2>Contrôle des données</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+        <h2 style={{ margin: 0 }}>Contrôle des données</h2>
+        <button style={{ background: '#b91c1c' }} onClick={() => setShowConfirm(true)}>
+          Vider les opérations importées
+        </button>
+      </div>
       {error && <div className="error">{error}</div>}
 
       <div className="card" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
@@ -75,6 +94,22 @@ function DataControl() {
           {total} ligne{total !== 1 ? 's' : ''} au total
         </span>
       </div>
+
+      {showConfirm && (
+        <div className="modal-backdrop">
+          <div className="modal-box" style={{ maxWidth: 420 }}>
+            <h3 style={{ color: '#b91c1c' }}>Attention</h3>
+            <p style={{ margin: 0 }}>
+              Cette opération efface <strong>toutes les opérations importées</strong> de manière irréversible.
+            </p>
+            <div className="modal-actions">
+              <button className="secondary" onClick={() => setShowConfirm(false)}>Annuler</button>
+              <button style={{ background: '#b91c1c' }} onClick={handleDeleteAll}>Continuer</button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <div className="card table-card" style={{ overflowX: 'auto' }}>
         {loading

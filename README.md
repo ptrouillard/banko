@@ -1,4 +1,4 @@
-# Banquo : ma banque perso
+# Banko : ma banque perso
 
 Application web pour analyser rapidement les dépenses courantes à partir d'un fichier Excel bancaire.
 

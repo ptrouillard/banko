@@ -19,8 +19,8 @@ function Login({ onLogin }) {
       if (!token) {
         throw new Error(t('invalidToken'));
       }
-      localStorage.setItem('banquo_token', token);
-      localStorage.setItem('banquo_user', username);
+      localStorage.setItem('banko_token', token);
+      localStorage.setItem('banko_user', username);
       onLogin(username);
       navigate('/');
     } catch (err) {
@@ -31,7 +31,7 @@ function Login({ onLogin }) {
   return (
     <div className="page page-center">
       <div className="card">
-        <h1>Banquo</h1>
+        <h1>Banko</h1>
         <p>{isRegister ? t('createAccount') : t('login')}</p>
         <form onSubmit={handleSubmit}>
           <label>{t('username')}</label>

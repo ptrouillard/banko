@@ -21,42 +21,70 @@ router.get('/suggest', (req, res) => {
 
 // Liste toutes les catégories
 router.get('/', (req, res) => {
-  const rows = db.prepare('SELECT id, libelle, pattern FROM categories ORDER BY libelle').all();
+  const rows = db.prepare('SELECT id, libelle, pattern, type FROM categories ORDER BY libelle').all();
   return res.json(rows);
 });
 
 // Crée une nouvelle catégorie
 router.post('/', (req, res) => {
-  const { libelle, pattern } = req.body;
+  const { libelle, pattern, type } = req.body;
   if (!libelle || !libelle.trim()) {
     return res.status(400).json({ error: 'Libellé requis' });
   }
+  const validType = ['depense', 'recette'].includes(type) ? type : null;
   try {
-    const info = db.prepare('INSERT INTO categories (libelle, pattern) VALUES (?, ?)').run(
+    const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(
       libelle.trim(),
-      pattern ? pattern.trim() : ''
+      pattern ? pattern.trim() : '',
+      validType
     );
-    return res.json({ id: info.lastInsertRowid, libelle: libelle.trim(), pattern: pattern || '' });
+    return res.json({ id: info.lastInsertRowid, libelle: libelle.trim(), pattern: pattern || '', type: validType });
   } catch {
     return res.status(409).json({ error: 'Cette catégorie existe déjà' });
   }
 });
 
-// Modifie le pattern d'une catégorie (libellé non modifiable)
+// Modifie le pattern et/ou le type d'une catégorie
 router.patch('/:id', (req, res) => {
   const { id } = req.params;
-  const { pattern } = req.body;
-  if (pattern === undefined) return res.status(400).json({ error: 'Pattern requis' });
-  const info = db.prepare('UPDATE categories SET pattern = ? WHERE id = ?').run(pattern.trim(), id);
+  const { pattern, type } = req.body;
+
+  const updates = [];
+  const params = [];
+
+  if (pattern !== undefined) {
+    updates.push('pattern = ?');
+    params.push(pattern.trim());
+  }
+  if (type !== undefined) {
+    const validType = ['depense', 'recette'].includes(type) ? type : null;
+    updates.push('type = ?');
+    params.push(validType);
+  }
+
+  if (updates.length === 0) return res.status(400).json({ error: 'Aucun champ à mettre à jour' });
+
+  params.push(id);
+  const info = db.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).run(...params);
   if (info.changes === 0) return res.status(404).json({ error: 'Catégorie introuvable' });
   return res.json({ success: true });
 });
 
-// Supprime une catégorie
+// Vide toutes les catégories et nettoie les références associées
+router.delete('/all', (req, res) => {
+  db.prepare('DELETE FROM portefeuille_categories').run();
+  db.prepare('UPDATE data SET categorie_id = NULL, categorie = NULL').run();
+  db.prepare('DELETE FROM categories').run();
+  return res.json({ success: true });
+});
+
+// Supprime une catégorie et nullifie les opérations qui y pointaient
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  const info = db.prepare('DELETE FROM categories WHERE id = ?').run(id);
-  if (info.changes === 0) return res.status(404).json({ error: 'Catégorie introuvable' });
+  const cat = db.prepare('SELECT id FROM categories WHERE id = ?').get(id);
+  if (!cat) return res.status(404).json({ error: 'Catégorie introuvable' });
+  db.prepare('UPDATE data SET categorie_id = NULL, categorie = NULL WHERE categorie_id = ?').run(id);
+  db.prepare('DELETE FROM categories WHERE id = ?').run(id);
   return res.json({ success: true });
 });
 

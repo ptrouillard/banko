@@ -15,7 +15,7 @@ router.post('/register', async (req, res) => {
   try {
     const stmt = db.prepare('INSERT INTO users (username, password) VALUES (?, ?)');
     const info = stmt.run(username, hashed);
-    const secret = process.env.JWT_SECRET || 'banquo_secret';
+    const secret = process.env.JWT_SECRET || 'banko_secret';
     const token = jwt.sign({ id: info.lastInsertRowid, username }, secret, { expiresIn: '8h' });
     return res.json({ id: info.lastInsertRowid, username, token });
   } catch (error) {
@@ -39,7 +39,7 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Identifiants invalides' });
   }
 
-  const secret = process.env.JWT_SECRET || 'banquo_secret';
+  const secret = process.env.JWT_SECRET || 'banko_secret';
   const token = jwt.sign({ id: user.id, username: user.username }, secret, { expiresIn: '8h' });
   return res.json({ token, username: user.username });
 });

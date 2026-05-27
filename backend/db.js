@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dbPath = process.env.DB_FILE || path.join(__dirname, 'banquo.sqlite');
+const dbPath = process.env.DB_FILE || path.join(__dirname, 'banko.sqlite');
 const db = new Database(dbPath);
 
 db.exec(`
@@ -28,6 +28,11 @@ CREATE TABLE IF NOT EXISTS data (
 
 db.exec(`CREATE INDEX IF NOT EXISTS idx_data_categorie ON data(categorie);`);
 
+// Migration : ajout de categorie_id (FK vers categories)
+try {
+  db.exec('ALTER TABLE data ADD COLUMN categorie_id INTEGER REFERENCES categories(id)');
+} catch { /* colonne déjà existante */ }
+
 // Table mois : liste des mois présents dans les données importées
 db.exec(`
 CREATE TABLE IF NOT EXISTS mois (
@@ -39,7 +44,33 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS categories (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   libelle TEXT UNIQUE NOT NULL,
-  pattern TEXT DEFAULT ''
+  pattern TEXT DEFAULT '',
+  type TEXT
 );`);
+
+// Migration : ajout du champ type sur les catégories existantes
+try {
+  db.exec("ALTER TABLE categories ADD COLUMN type TEXT");
+} catch { /* colonne déjà existante */ }
+
+// Portefeuilles
+db.exec(`
+CREATE TABLE IF NOT EXISTS portefeuilles (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nom TEXT UNIQUE NOT NULL,
+  permanent INTEGER DEFAULT 0,
+  auto_type TEXT
+);`);
+
+db.exec(`
+CREATE TABLE IF NOT EXISTS portefeuille_categories (
+  portefeuille_id INTEGER NOT NULL REFERENCES portefeuilles(id),
+  categorie_id INTEGER NOT NULL REFERENCES categories(id),
+  PRIMARY KEY (portefeuille_id, categorie_id)
+);`);
+
+// Seed des portefeuilles permanents
+db.prepare("INSERT OR IGNORE INTO portefeuilles (nom, permanent, auto_type) VALUES (?, 1, ?)").run('Charges récurrentes', 'charges_recurrentes');
+db.prepare("INSERT OR IGNORE INTO portefeuilles (nom, permanent, auto_type) VALUES (?, 1, ?)").run('Recettes récurrentes', 'recettes_recurrentes');
 
 export default db;

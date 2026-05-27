@@ -8,7 +8,7 @@ export function authMiddleware(req, res, next) {
   }
 
   try {
-    const secret = process.env.JWT_SECRET || 'banquo_secret';
+    const secret = process.env.JWT_SECRET || 'banko_secret';
     const payload = jwt.verify(token, secret);
     req.user = payload;
     next();

@@ -24,6 +24,13 @@ router.get('/', (req, res) => {
   return res.json({ rows, total, page, limit });
 });
 
+// Vider toute la base (opérations + mois)
+router.delete('/all', (req, res) => {
+  db.prepare('DELETE FROM data').run();
+  db.prepare('DELETE FROM mois').run();
+  return res.json({ success: true });
+});
+
 // Suppression d'une ligne
 router.delete('/:id', (req, res) => {
   const { id } = req.params;

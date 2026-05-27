@@ -9,49 +9,30 @@ router.get('/months', (req, res) => {
   return res.json(rows.map((r) => r.mois));
 });
 
-// Résumé dépenses / recettes pour un mois
+// Résumé dépenses / recettes (mois optionnel — toutes données si absent)
 router.get('/summary', (req, res) => {
   const { month } = req.query;
-  if (!month) return res.status(400).json({ error: 'Mois requis' });
-
-  const data = db.prepare(`
-    SELECT
-      SUM(debit)  AS total_debit,
-      SUM(credit) AS total_credit
-    FROM data
-    WHERE substr(date, 1, 7) = ?
-  `).get(month);
-
-  return res.json({ month, total_debit: data.total_debit || 0, total_credit: data.total_credit || 0 });
+  const data = month
+    ? db.prepare('SELECT SUM(debit) AS total_debit, SUM(credit) AS total_credit FROM data WHERE substr(date, 1, 7) = ?').get(month)
+    : db.prepare('SELECT SUM(debit) AS total_debit, SUM(credit) AS total_credit FROM data').get();
+  return res.json({ month: month || null, total_debit: data.total_debit || 0, total_credit: data.total_credit || 0 });
 });
 
-// Tableau des recettes du mois
+// Tableau des recettes (mois optionnel)
 router.get('/receipts', (req, res) => {
   const { month } = req.query;
-  if (!month) return res.status(400).json({ error: 'Mois requis' });
-
-  const rows = db.prepare(`
-    SELECT id, date, libelle, credit AS amount
-    FROM data
-    WHERE substr(date, 1, 7) = ? AND credit > 0
-    ORDER BY date DESC
-  `).all(month);
-
+  const rows = month
+    ? db.prepare('SELECT id, date, libelle, credit AS amount FROM data WHERE substr(date, 1, 7) = ? AND credit > 0 ORDER BY date DESC').all(month)
+    : db.prepare('SELECT id, date, libelle, credit AS amount FROM data WHERE credit > 0 ORDER BY date DESC').all();
   return res.json(rows);
 });
 
-// Tableau des dépenses du mois
+// Tableau des dépenses (mois optionnel)
 router.get('/expenses', (req, res) => {
   const { month } = req.query;
-  if (!month) return res.status(400).json({ error: 'Mois requis' });
-
-  const rows = db.prepare(`
-    SELECT id, date, libelle, debit AS amount, categorie
-    FROM data
-    WHERE substr(date, 1, 7) = ? AND debit > 0
-    ORDER BY date DESC
-  `).all(month);
-
+  const rows = month
+    ? db.prepare('SELECT id, date, libelle, debit AS amount, categorie FROM data WHERE substr(date, 1, 7) = ? AND debit > 0 ORDER BY date DESC').all(month)
+    : db.prepare('SELECT id, date, libelle, debit AS amount, categorie FROM data WHERE debit > 0 ORDER BY date DESC').all();
   return res.json(rows);
 });
 

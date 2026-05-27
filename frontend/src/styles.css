@@ -224,3 +224,411 @@ tfoot .total-row td {
   border: 1px solid #cbd5e1;
   border-radius: 8px;
 }
+
+/* ── Catégorisation ── */
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 1rem 1.5rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: #e2e8f0;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.row-selected {
+  background: #eff6ff !important;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.result-banner {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* ── Modale ── */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modal-box h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.modal-libelle {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modal-libelle-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+}
+
+.modal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-section-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.modal-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.modal-no-match {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.category-suggestions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.category-suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.category-suggestion-item:hover {
+  background: #f1f5f9;
+}
+
+.category-suggestion-item.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  font-weight: 500;
+}
+
+.pattern-chip {
+  font-size: 0.78rem;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-style: normal;
+}
+
+/* ── Type radio (modale catégorisation) ── */
+
+.type-radio-group {
+  display: flex;
+  gap: 1rem;
+}
+
+.type-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* ── Portefeuilles ── */
+
+.page-header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-header-row h2 {
+  margin: 0;
+}
+
+.btn-back {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.85rem;
+  color: #475569;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background: #f1f5f9;
+}
+
+.portefeuille-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.portefeuille-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+.portefeuille-card:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.portefeuille-card--auto {
+  border-color: #bfdbfe;
+  background: #f0f9ff;
+}
+
+.portefeuille-card--auto:hover {
+  background: #e0f2fe;
+}
+
+.portefeuille-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.portefeuille-nom {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.portefeuille-meta {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+}
+
+.badge-auto {
+  font-size: 0.72rem;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.btn-icon-danger {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.btn-icon-danger:hover {
+  color: #c0392b;
+  background: #fee2e2;
+}
+
+.portefeuille-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.portefeuille-detail-header h3 {
+  margin: 0;
+}
+
+.portefeuille-totaux {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.total-chip {
+  font-size: 0.82rem;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+
+.total-chip--debit {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.total-chip--credit {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* ── Tags catégorie ── */
+
+.cat-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 99px;
+  padding: 3px 10px;
+  font-size: 0.82rem;
+}
+
+.cat-tag--orphan {
+  background: #fef9c3;
+  border-color: #fde047;
+  color: #713f12;
+}
+
+/* ── Bannière orphelins ── */
+
+.orphan-banner {
+  background: #fefce8;
+  border: 1px solid #fde047 !important;
+}
+
+.orphan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* ── Sous-nav inline Analysis ── */
+
+.analysis-month-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+}
+
+.analysis-subnav {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0;
+}
+
+.analysis-subnav a {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: #475569;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.1s, border-color 0.1s;
+}
+
+.analysis-subnav a:hover {
+  color: #0f172a;
+}
+
+.analysis-subnav a.active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+  font-weight: 600;
+}
+
+.portefeuille-scope {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  font-weight: 400;
+}

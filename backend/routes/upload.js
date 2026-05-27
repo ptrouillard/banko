@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
 import db from '../db.js';
+import { loadRules, applyRules } from '../regles/loader.js';
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
@@ -15,7 +16,6 @@ function normalizeDate(str) {
   const s = String(str).trim();
 
   // Serial numérique Excel (ex: 46163 ou 46163.0)
-  // Excel compte les jours depuis le 30/12/1899
   const serial = parseFloat(s);
   if (!isNaN(serial) && serial > 1000 && !/[\/\-]/.test(s)) {
     const excelEpoch = new Date(Date.UTC(1899, 11, 30));
@@ -124,20 +124,55 @@ router.post('/', upload.single('file'), (req, res) => {
     const rows = parseResult.rows;
     console.log('[import] lignes extraites après parsing:', rows.length);
 
+    // Chargement des règles de catégorisation automatique pour Crédit Agricole
+    const rules = loadRules('CREDIT_AGRICOLE');
+    console.log('[import] règles chargées:', rules.length);
+
+    // Caches intra-import pour éviter les requêtes répétées
+    const categoryCache = new Map();
+    const portfolioCache = new Map();
+
+    const getOrCreateCategory = (libelle, type) => {
+      if (categoryCache.has(libelle)) return categoryCache.get(libelle);
+      let cat = db.prepare('SELECT id FROM categories WHERE libelle = ?').get(libelle);
+      if (!cat) {
+        const validType = ['depense', 'recette'].includes(type) ? type : null;
+        const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(libelle, '', validType);
+        cat = { id: info.lastInsertRowid };
+      }
+      categoryCache.set(libelle, cat.id);
+      return cat.id;
+    };
+
+    const getOrCreatePortfolio = (nom) => {
+      if (portfolioCache.has(nom)) return portfolioCache.get(nom);
+      let pf = db.prepare('SELECT id FROM portefeuilles WHERE nom = ?').get(nom);
+      if (!pf) {
+        const info = db.prepare('INSERT INTO portefeuilles (nom) VALUES (?)').run(nom);
+        pf = { id: info.lastInsertRowid };
+      }
+      portfolioCache.set(nom, pf.id);
+      return pf.id;
+    };
+
     let imported = 0;
     let duplicates = 0;
+    let autoCategorized = 0;
     let minDate = null;
     let maxDate = null;
 
     const insert = db.prepare(`
-      INSERT INTO data (date, libelle, debit, credit, date_import)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO data (date, libelle, debit, credit, date_import, categorie_id, categorie)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(date, libelle) DO UPDATE SET
         debit = CASE WHEN data.debit = 0 THEN excluded.debit ELSE data.debit END,
-        credit = CASE WHEN data.credit = 0 THEN excluded.credit ELSE data.credit END
+        credit = CASE WHEN data.credit = 0 THEN excluded.credit ELSE data.credit END,
+        categorie_id = CASE WHEN data.categorie_id IS NULL THEN excluded.categorie_id ELSE data.categorie_id END,
+        categorie = CASE WHEN data.categorie IS NULL THEN excluded.categorie ELSE data.categorie END
     `);
 
     const getExisting = db.prepare('SELECT debit, credit FROM data WHERE date = ? AND libelle = ?');
+    const linkCatPortfolio = db.prepare('INSERT OR IGNORE INTO portefeuille_categories (portefeuille_id, categorie_id) VALUES (?, ?)');
     const now = new Date().toISOString();
 
     // Mise à jour de la table mois après import
@@ -162,7 +197,24 @@ router.post('/', upload.single('file'), (req, res) => {
         continue;
       }
 
-      insert.run(normalizedDate, libelle, raw.debit, raw.credit, now);
+      // Application des règles de catégorisation automatique
+      const ruleMatch = applyRules(libelle, rules);
+      let autoCategId = null;
+      let autoCat = null;
+
+      if (ruleMatch && ruleMatch.categorie) {
+        autoCategId = getOrCreateCategory(ruleMatch.categorie, ruleMatch.type);
+        autoCat = ruleMatch.categorie;
+
+        if (ruleMatch.portefeuille) {
+          const pfId = getOrCreatePortfolio(ruleMatch.portefeuille);
+          linkCatPortfolio.run(pfId, autoCategId);
+        }
+
+        autoCategorized += 1;
+      }
+
+      insert.run(normalizedDate, libelle, raw.debit, raw.credit, now, autoCategId, autoCat);
       imported += 1;
 
       // Enregistrement du mois (format YYYY-MM)
@@ -176,11 +228,12 @@ router.post('/', upload.single('file'), (req, res) => {
       }
     }
 
-    console.log('[import] terminé. importés:', imported, 'doublons:', duplicates);
+    console.log('[import] terminé. importés:', imported, 'doublons:', duplicates, 'auto-catégorisés:', autoCategorized);
 
     return res.json({
       imported,
       duplicates,
+      autoCategorized,
       firstDate: minDate ? minDate.toISOString().slice(0, 10) : null,
       lastDate: maxDate ? maxDate.toISOString().slice(0, 10) : null,
     });

@@ -41,6 +41,9 @@ function UploadPage() {
           <h3>{t('importResult')}</h3>
           <p>{t('importedRows')} : <strong>{result.imported}</strong></p>
           <p>{t('duplicateRows')} : <strong>{result.duplicates}</strong></p>
+          {result.autoCategorized > 0 && (
+            <p>Catégorisées automatiquement : <strong style={{ color: '#166534' }}>{result.autoCategorized}</strong></p>
+          )}
           <p>{t('firstDate')} : <strong>{result.firstDate || 'N/A'}</strong></p>
           <p>{t('lastDate')} : <strong>{result.lastDate || 'N/A'}</strong></p>
         </div>

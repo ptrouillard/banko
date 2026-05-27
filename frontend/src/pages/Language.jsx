@@ -5,7 +5,7 @@ function Language() {
   const { lang, setLang, t } = useTranslation();
 
   useEffect(() => {
-    localStorage.setItem('banquo_lang', lang);
+    localStorage.setItem('banko_lang', lang);
   }, [lang]);
 
   return (
