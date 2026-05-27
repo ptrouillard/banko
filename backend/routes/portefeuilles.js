@@ -3,72 +3,44 @@ import db from '../db.js';
 
 const router = express.Router();
 
-// Retourne les catégories récurrentes pour un portefeuille automatique
-function getRecurringCategories(autoType) {
-  const totalMonths = db.prepare('SELECT COUNT(*) AS cnt FROM mois').get().cnt;
-  if (totalMonths < 2) return [];
-
-  const catType = autoType === 'charges_recurrentes' ? 'depense' : 'recette';
-  const amountField = autoType === 'charges_recurrentes' ? 'debit' : 'credit';
-
-  return db.prepare(`
-    SELECT c.id, c.libelle, c.type,
-      COUNT(DISTINCT substr(d.date, 1, 7)) AS nb_mois
-    FROM categories c
-    JOIN data d ON (
-      (d.categorie_id IS NOT NULL AND d.categorie_id = c.id) OR
-      (d.categorie_id IS NULL AND d.categorie = c.libelle)
-    )
-    WHERE c.type = ? AND d.${amountField} > 0
-    GROUP BY c.id
-    HAVING nb_mois >= ?
-  `).all(catType, totalMonths);
-}
-
 // Liste tous les portefeuilles
 router.get('/', (req, res) => {
   const rows = db.prepare(`
-    SELECT p.id, p.nom, p.permanent, p.auto_type,
+    SELECT p.id, p.nom,
       COUNT(pc.categorie_id) AS nb_categories
     FROM portefeuilles p
     LEFT JOIN portefeuille_categories pc ON pc.portefeuille_id = p.id
     GROUP BY p.id
-    ORDER BY p.permanent DESC, p.nom
+    ORDER BY p.nom
   `).all();
 
-  return res.json(rows.map((p) => {
-    if (p.permanent && p.auto_type) {
-      return { ...p, nb_categories: getRecurringCategories(p.auto_type).length };
-    }
-    return p;
-  }));
+  return res.json(rows);
 });
 
-// Crée un portefeuille manuel
+// Crée un portefeuille
 router.post('/', (req, res) => {
   const { nom } = req.body;
   if (!nom || !String(nom).trim()) return res.status(400).json({ error: 'Nom requis' });
   try {
     const info = db.prepare('INSERT INTO portefeuilles (nom) VALUES (?)').run(String(nom).trim());
-    return res.json({ id: info.lastInsertRowid, nom: String(nom).trim(), permanent: 0, nb_categories: 0 });
+    return res.json({ id: info.lastInsertRowid, nom: String(nom).trim(), nb_categories: 0 });
   } catch {
     return res.status(409).json({ error: 'Un portefeuille avec ce nom existe déjà' });
   }
 });
 
-// Vide tous les portefeuilles non-permanents et leurs liens
+// Vide tous les portefeuilles et leurs liens
 router.delete('/all', (req, res) => {
-  db.prepare('DELETE FROM portefeuille_categories WHERE portefeuille_id IN (SELECT id FROM portefeuilles WHERE permanent = 0)').run();
-  db.prepare('DELETE FROM portefeuilles WHERE permanent = 0').run();
+  db.prepare('DELETE FROM portefeuille_categories').run();
+  db.prepare('DELETE FROM portefeuilles').run();
   return res.json({ success: true });
 });
 
-// Supprime un portefeuille manuel
+// Supprime un portefeuille
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
   const p = db.prepare('SELECT * FROM portefeuilles WHERE id = ?').get(id);
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
-  if (p.permanent) return res.status(403).json({ error: 'Ce portefeuille ne peut pas être supprimé' });
   db.prepare('DELETE FROM portefeuille_categories WHERE portefeuille_id = ?').run(id);
   db.prepare('DELETE FROM portefeuilles WHERE id = ?').run(id);
   return res.json({ success: true });
@@ -93,18 +65,13 @@ router.get('/:id/detail', (req, res) => {
   const p = db.prepare('SELECT * FROM portefeuilles WHERE id = ?').get(id);
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
 
-  let categories;
-  if (p.permanent && p.auto_type) {
-    categories = getRecurringCategories(p.auto_type);
-  } else {
-    categories = db.prepare(`
-      SELECT c.id, c.libelle, c.type
-      FROM portefeuille_categories pc
-      JOIN categories c ON c.id = pc.categorie_id
-      WHERE pc.portefeuille_id = ?
-      ORDER BY c.libelle
-    `).all(id);
-  }
+  const categories = db.prepare(`
+    SELECT c.id, c.libelle, c.type
+    FROM portefeuille_categories pc
+    JOIN categories c ON c.id = pc.categorie_id
+    WHERE pc.portefeuille_id = ?
+    ORDER BY c.libelle
+  `).all(id);
 
   if (categories.length === 0) {
     return res.json({ portefeuille: p, month: month || null, categories: [], operations: [], total_debit: 0, total_credit: 0 });
@@ -142,7 +109,7 @@ router.get('/:id/detail', (req, res) => {
   return res.json({ portefeuille: p, month: month || null, categories: categoriesWithTotals, operations, total_debit, total_credit });
 });
 
-// Ajoute une catégorie à un portefeuille manuel
+// Ajoute une catégorie à un portefeuille
 router.post('/:id/categories', (req, res) => {
   const { id } = req.params;
   const { categorie_id } = req.body;
@@ -150,7 +117,6 @@ router.post('/:id/categories', (req, res) => {
 
   const p = db.prepare('SELECT * FROM portefeuilles WHERE id = ?').get(id);
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
-  if (p.permanent) return res.status(403).json({ error: 'Impossible de modifier un portefeuille permanent' });
 
   try {
     db.prepare('INSERT INTO portefeuille_categories (portefeuille_id, categorie_id) VALUES (?, ?)').run(id, categorie_id);
@@ -160,13 +126,12 @@ router.post('/:id/categories', (req, res) => {
   }
 });
 
-// Retire une catégorie d'un portefeuille manuel
+// Retire une catégorie d'un portefeuille
 router.delete('/:id/categories/:cat_id', (req, res) => {
   const { id, cat_id } = req.params;
 
   const p = db.prepare('SELECT * FROM portefeuilles WHERE id = ?').get(id);
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
-  if (p.permanent) return res.status(403).json({ error: 'Impossible de modifier un portefeuille permanent' });
 
   db.prepare('DELETE FROM portefeuille_categories WHERE portefeuille_id = ? AND categorie_id = ?').run(id, cat_id);
   return res.json({ success: true });

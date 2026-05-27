@@ -19,10 +19,6 @@ function PortefeuilleCard({ p, allCategories, onDelete, onRefresh }) {
   const [error, setError] = useState('');
 
   const loadCats = async () => {
-    // Les catégories du portefeuille viennent de la liste complète filtrée
-    const res = await fetchPortefeuilles();
-    // On récupère la liste via l'endpoint detail sans mois ? Non : on utilise les catégories via l'API existante
-    // Solution simple : on charge les catégories liées via l'endpoint detail (sans mois, pas d'opérations)
     const { fetchPortefeuilleDetail } = await import('../api.js');
     const detail = await fetchPortefeuilleDetail(p.id);
     setCats(detail.data.categories);
@@ -60,21 +56,16 @@ function PortefeuilleCard({ p, allCategories, onDelete, onRefresh }) {
   const available = allCategories.filter((c) => !assignedIds.has(c.id));
 
   return (
-    <div className={`portefeuille-card${p.permanent ? ' portefeuille-card--auto' : ''}`} style={{ cursor: 'default' }}>
+    <div className="portefeuille-card" style={{ cursor: 'default' }}>
       <div className="portefeuille-card-header" style={{ cursor: 'pointer' }} onClick={handleExpand}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span className="portefeuille-nom">{p.nom}</span>
-          {p.permanent && <span className="badge-auto">Automatique</span>}
-        </div>
+        <span className="portefeuille-nom">{p.nom}</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <span className="portefeuille-meta">{p.nb_categories} catégorie{p.nb_categories !== 1 ? 's' : ''}</span>
-          {!p.permanent && (
-            <button
-              className="btn-icon-danger"
-              onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}
-              title="Supprimer"
-            >✕</button>
-          )}
+          <button
+            className="btn-icon-danger"
+            onClick={(e) => { e.stopPropagation(); onDelete(p.id); }}
+            title="Supprimer"
+          >✕</button>
           <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{expanded ? '▲' : '▼'}</span>
         </div>
       </div>
@@ -83,36 +74,28 @@ function PortefeuilleCard({ p, allCategories, onDelete, onRefresh }) {
         <div style={{ marginTop: '0.75rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
           {error && <div className="error" style={{ marginBottom: '0.5rem' }}>{error}</div>}
 
-          {p.permanent ? (
-            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0 }}>
-              Portefeuille automatique — les catégories sont calculées depuis les données.
-            </p>
+          {cats.length === 0 ? (
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>Aucune catégorie assignée.</p>
           ) : (
-            <>
-              {cats.length === 0 ? (
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0 0 0.5rem' }}>Aucune catégorie assignée.</p>
-              ) : (
-                <ul style={{ margin: '0 0 0.75rem', padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                  {cats.map((cat) => (
-                    <li key={cat.id} className="cat-tag">
-                      <span>{cat.libelle}</span>
-                      {cat.type && <em className="pattern-chip">{TYPE_LABELS[cat.type]}</em>}
-                      <button onClick={() => handleRemove(cat.id)} title="Retirer" style={{ marginLeft: '0.3rem', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem' }}>✕</button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <select value={addCatId} onChange={(e) => setAddCatId(e.target.value)} style={{ flex: 1, fontSize: '0.85rem' }}>
-                  <option value="">Ajouter une catégorie…</option>
-                  {available.map((c) => (
-                    <option key={c.id} value={c.id}>{c.libelle}{c.type ? ` (${TYPE_LABELS[c.type]})` : ''}</option>
-                  ))}
-                </select>
-                <button onClick={handleAdd} disabled={!addCatId}>Ajouter</button>
-              </div>
-            </>
+            <ul style={{ margin: '0 0 0.75rem', padding: 0, listStyle: 'none', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+              {cats.map((cat) => (
+                <li key={cat.id} className="cat-tag">
+                  <span>{cat.libelle}</span>
+                  {cat.type && <em className="pattern-chip">{TYPE_LABELS[cat.type]}</em>}
+                  <button onClick={() => handleRemove(cat.id)} title="Retirer" style={{ marginLeft: '0.3rem', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem' }}>✕</button>
+                </li>
+              ))}
+            </ul>
           )}
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <select value={addCatId} onChange={(e) => setAddCatId(e.target.value)} style={{ flex: 1, fontSize: '0.85rem' }}>
+              <option value="">Ajouter une catégorie…</option>
+              {available.map((c) => (
+                <option key={c.id} value={c.id}>{c.libelle}{c.type ? ` (${TYPE_LABELS[c.type]})` : ''}</option>
+              ))}
+            </select>
+            <button onClick={handleAdd} disabled={!addCatId}>Ajouter</button>
+          </div>
         </div>
       )}
     </div>
@@ -174,9 +157,6 @@ function Portefeuilles() {
     }
   };
 
-  const permanents = portefeuilles.filter((p) => p.permanent);
-  const manuels = portefeuilles.filter((p) => !p.permanent);
-
   return (
     <div className="page">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -192,7 +172,7 @@ function Portefeuilles() {
           <div className="modal-box" style={{ maxWidth: 420 }}>
             <h3 style={{ color: '#b91c1c' }}>Attention</h3>
             <p style={{ margin: 0 }}>
-              Cette opération efface <strong>tous les portefeuilles</strong> (hors automatiques) de manière irréversible.
+              Cette opération efface <strong>tous les portefeuilles</strong> de manière irréversible.
             </p>
             <div className="modal-actions">
               <button className="secondary" onClick={() => setShowConfirm(false)}>Annuler</button>
@@ -223,17 +203,6 @@ function Portefeuilles() {
         </div>
       )}
 
-      {permanents.length > 0 && (
-        <div className="card">
-          <h3>Automatiques</h3>
-          <div className="portefeuille-list">
-            {permanents.map((p) => (
-              <PortefeuilleCard key={p.id} p={p} allCategories={allCategories} onDelete={handleDelete} onRefresh={load} />
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="card">
         <h3>Mes portefeuilles</h3>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -248,11 +217,11 @@ function Portefeuilles() {
           <button onClick={handleCreate}>Créer</button>
         </div>
 
-        {manuels.length === 0 ? (
+        {portefeuilles.length === 0 ? (
           <p style={{ color: '#64748b' }}>Aucun portefeuille créé.</p>
         ) : (
           <div className="portefeuille-list">
-            {manuels.map((p) => (
+            {portefeuilles.map((p) => (
               <PortefeuilleCard key={p.id} p={p} allCategories={allCategories} onDelete={handleDelete} onRefresh={load} />
             ))}
           </div>

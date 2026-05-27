@@ -33,7 +33,6 @@ function PortefeuilleDetail() {
       <div className="page-header-row" style={{ marginBottom: '1rem' }}>
         <button className="btn-back" onClick={() => navigate('/analysis/portefeuilles')}>← Portefeuilles</button>
         <h3 style={{ margin: 0 }}>{portefeuille.nom}</h3>
-        {portefeuille.permanent && <span className="badge-auto">Automatique</span>}
         <span className="portefeuille-scope">{scope}</span>
       </div>
 
@@ -49,11 +48,7 @@ function PortefeuilleDetail() {
         </div>
 
         {categories.length === 0 ? (
-          <p style={{ color: '#64748b' }}>
-            {portefeuille.permanent
-              ? 'Aucune catégorie récurrente détectée (2 mois minimum nécessaires).'
-              : 'Aucune catégorie dans ce portefeuille.'}
-          </p>
+          <p style={{ color: '#64748b' }}>Aucune catégorie dans ce portefeuille.</p>
         ) : (
           <table>
             <thead>

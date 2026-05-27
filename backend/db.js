@@ -57,9 +57,7 @@ try {
 db.exec(`
 CREATE TABLE IF NOT EXISTS portefeuilles (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nom TEXT UNIQUE NOT NULL,
-  permanent INTEGER DEFAULT 0,
-  auto_type TEXT
+  nom TEXT UNIQUE NOT NULL
 );`);
 
 db.exec(`
@@ -68,9 +66,5 @@ CREATE TABLE IF NOT EXISTS portefeuille_categories (
   categorie_id INTEGER NOT NULL REFERENCES categories(id),
   PRIMARY KEY (portefeuille_id, categorie_id)
 );`);
-
-// Seed des portefeuilles permanents
-db.prepare("INSERT OR IGNORE INTO portefeuilles (nom, permanent, auto_type) VALUES (?, 1, ?)").run('Charges récurrentes', 'charges_recurrentes');
-db.prepare("INSERT OR IGNORE INTO portefeuilles (nom, permanent, auto_type) VALUES (?, 1, ?)").run('Recettes récurrentes', 'recettes_recurrentes');
 
 export default db;
