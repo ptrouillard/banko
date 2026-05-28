@@ -50,6 +50,8 @@ function Analysis() {
         <NavLink to="/analysis/portefeuilles" className={({ isActive }) => isActive ? 'active' : ''}>Portefeuilles</NavLink>
         <NavLink to="/analysis/flux" className={({ isActive }) => isActive ? 'active' : ''}>Suivi du flux</NavLink>
         <NavLink to="/analysis/repartition" className={({ isActive }) => isActive ? 'active' : ''}>Répartition</NavLink>
+        <NavLink to="/analysis/evolution-depenses" className={({ isActive }) => isActive ? 'active' : ''}>Évol. dépenses</NavLink>
+        <NavLink to="/analysis/evolution-recettes" className={({ isActive }) => isActive ? 'active' : ''}>Évol. recettes</NavLink>
       </div>
 
       <Outlet context={{ month: selectedMonth }} />

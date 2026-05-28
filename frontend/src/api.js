@@ -118,4 +118,9 @@ export async function fetchRepartition(month) {
   return api.get('/repartition', { params: month ? { month } : {} });
 }
 
+// Évolution dépenses / recettes par portefeuille
+export async function fetchEvolution(portefeuille_id, type) {
+  return api.get('/evolution', { params: { portefeuille_id, type } });
+}
+
 export default api;
