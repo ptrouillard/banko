@@ -123,4 +123,9 @@ export async function removeCategoryFromPortefeuille(id, cat_id) {
   return api.delete(`/portefeuilles/${id}/categories/${cat_id}`);
 }
 
+// Cash flow
+export async function fetchCashflow(period = '3m') {
+  return api.get('/cashflow', { params: { period } });
+}
+
 export default api;

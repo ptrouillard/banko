@@ -8,6 +8,7 @@ import categoriesRouter from './routes/categories.js';
 import categorisationRouter from './routes/categorisation.js';
 import portefeuillesRouter from './routes/portefeuilles.js';
 import dataRouter from './routes/data.js';
+import cashflowRouter from './routes/cashflow.js';
 import { authMiddleware } from './middleware/auth.js';
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/categories', authMiddleware, categoriesRouter);
 app.use('/api/categorisation', authMiddleware, categorisationRouter);
 app.use('/api/portefeuilles', authMiddleware, portefeuillesRouter);
 app.use('/api/data', authMiddleware, dataRouter);
+app.use('/api/cashflow', authMiddleware, cashflowRouter);
 app.get('/api/ping', (req, res) => res.json({ ok: true }));
 
 app.listen(port, () => {

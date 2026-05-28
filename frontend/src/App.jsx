@@ -8,6 +8,7 @@ import AnalysisDepenses from './pages/AnalysisDepenses.jsx';
 import AnalysisRecettes from './pages/AnalysisRecettes.jsx';
 import AnalysisPortefeuilles from './pages/AnalysisPortefeuilles.jsx';
 import PortefeuilleDetail from './pages/PortefeuilleDetail.jsx';
+import SuiviFlux from './pages/SuiviFlux.jsx';
 import Language from './pages/Language.jsx';
 import Categorisation from './pages/Categorisation.jsx';
 import Portefeuilles from './pages/Portefeuilles.jsx';
@@ -54,6 +55,7 @@ function AppInner() {
               <NavLink to="/analysis/depenses">Dépenses</NavLink>
               <NavLink to="/analysis/recettes">Recettes</NavLink>
               <NavLink to="/analysis/portefeuilles">Portefeuilles</NavLink>
+              <NavLink to="/analysis/flux">Suivi du flux</NavLink>
             </div>
           </div>
           <NavLink to="/categories">Catégoriser</NavLink>
@@ -76,6 +78,7 @@ function AppInner() {
             <Route path="recettes" element={<AnalysisRecettes />} />
             <Route path="portefeuilles" element={<AnalysisPortefeuilles />} />
             <Route path="portefeuilles/:id" element={<PortefeuilleDetail />} />
+            <Route path="flux" element={<SuiviFlux />} />
           </Route>
           <Route path="/categories" element={<Categorisation />} />
           <Route path="/portefeuilles" element={<Portefeuilles />} />
