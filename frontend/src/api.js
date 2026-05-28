@@ -74,23 +74,8 @@ export async function applyCategory({ operation_id, categorie_id, new_category_n
 }
 
 // Catégories
-export async function fetchCategorySuggestions(q) {
-  return api.get('/categories/suggest', { params: { q } });
-}
 export async function fetchCategories() {
   return api.get('/categories');
-}
-export async function createCategory(libelle, pattern, type) {
-  return api.post('/categories', { libelle, pattern, type });
-}
-export async function updateCategoryPattern(id, pattern) {
-  return api.patch(`/categories/${id}`, { pattern });
-}
-export async function updateCategoryType(id, type) {
-  return api.patch(`/categories/${id}`, { type });
-}
-export async function deleteCategory(id) {
-  return api.delete(`/categories/${id}`);
 }
 export async function deleteAllCategories() {
   return api.delete('/categories/all');
@@ -126,6 +111,11 @@ export async function removeCategoryFromPortefeuille(id, cat_id) {
 // Cash flow
 export async function fetchCashflow(period = '3m') {
   return api.get('/cashflow', { params: { period } });
+}
+
+// Répartition dépenses / recettes
+export async function fetchRepartition(month) {
+  return api.get('/repartition', { params: month ? { month } : {} });
 }
 
 export default api;

@@ -1,172 +1,136 @@
 import { useEffect, useState } from 'react';
 import {
-  resetMonths,
   fetchCategories,
-  createCategory,
-  updateCategoryPattern,
-  updateCategoryType,
-  deleteCategory,
   deleteAllCategories,
+  resetMonths,
+  fetchPortefeuilles,
+  addCategoryToPortefeuille,
+  removeCategoryFromPortefeuille,
 } from '../api.js';
 
 const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes', interne: 'Interne' };
 
-function TypeSelect({ value, onChange }) {
+function CategoryRow({ cat, allPortfolios, onRefresh }) {
+  const [saving, setSaving] = useState(false);
+
+  const assignedIds = new Set(cat.portfolios.map((p) => p.id));
+  const available = allPortfolios.filter((p) => !assignedIds.has(p.id));
+
+  const handleAdd = async (portId) => {
+    if (!portId) return;
+    setSaving(true);
+    try {
+      await addCategoryToPortefeuille(parseInt(portId), cat.id);
+      onRefresh();
+    } catch {}
+    setSaving(false);
+  };
+
+  const handleRemove = async (portId) => {
+    setSaving(true);
+    try {
+      await removeCategoryFromPortefeuille(portId, cat.id);
+      onRefresh();
+    } catch {}
+    setSaving(false);
+  };
+
   return (
-    <select value={value || ''} onChange={(e) => onChange(e.target.value || null)}>
-      <option value="">—</option>
-      <option value="depense">Dépenses</option>
-      <option value="recette">Recettes</option>
-      <option value="interne">Interne</option>
-    </select>
+    <tr>
+      <td style={{ fontWeight: 500 }}>{cat.libelle}</td>
+      <td>
+        {cat.type
+          ? <span className="pattern-chip">{TYPE_LABELS[cat.type]}</span>
+          : <em style={{ opacity: 0.4 }}>—</em>}
+      </td>
+      <td>
+        <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.3rem' }}>
+          {cat.portfolios.map((p) => (
+            <span key={p.id} className="cat-tag">
+              {p.nom}
+              <button
+                onClick={() => handleRemove(p.id)}
+                disabled={saving}
+                style={{ marginLeft: '0.3rem', color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', padding: 0 }}
+                title="Retirer de ce portefeuille"
+              >✕</button>
+            </span>
+          ))}
+          {available.length > 0 && (
+            <select
+              value=""
+              onChange={(e) => handleAdd(e.target.value)}
+              disabled={saving}
+              style={{ fontSize: '0.8rem', padding: '2px 4px', border: '1px dashed #cbd5e1', borderRadius: 4, color: '#64748b', background: 'transparent', cursor: 'pointer' }}
+            >
+              <option value="">+ Portefeuille…</option>
+              {available.map((p) => (
+                <option key={p.id} value={p.id}>{p.nom}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      </td>
+    </tr>
   );
 }
 
-function CategoriesCrud() {
+function CategoriesTable() {
   const [categories, setCategories] = useState([]);
+  const [allPortfolios, setAllPortfolios] = useState([]);
   const [error, setError] = useState('');
-  const [newLibelle, setNewLibelle] = useState('');
-  const [newPattern, setNewPattern] = useState('');
-  const [newType, setNewType] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editingPattern, setEditingPattern] = useState('');
+  const [filter, setFilter] = useState('');
 
-  const load = () => {
-    fetchCategories()
-      .then((res) => setCategories(res.data))
-      .catch(() => setError('Erreur lors du chargement des catégories'));
+  const load = async () => {
+    try {
+      const [cRes, pRes] = await Promise.all([fetchCategories(), fetchPortefeuilles()]);
+      setCategories(cRes.data);
+      setAllPortfolios(pRes.data);
+    } catch {
+      setError('Erreur lors du chargement');
+    }
   };
 
   useEffect(() => { load(); }, []);
 
-  const handleAdd = async () => {
-    if (!newLibelle.trim()) return;
-    try {
-      await createCategory(newLibelle.trim(), newPattern.trim(), newType || null);
-      setNewLibelle('');
-      setNewPattern('');
-      setNewType('');
-      load();
-    } catch {
-      setError('Cette catégorie existe déjà ou une erreur est survenue');
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Supprimer cette catégorie ? Les opérations associées seront décatégorisées.')) return;
-    try {
-      await deleteCategory(id);
-      load();
-    } catch {
-      setError('Erreur lors de la suppression');
-    }
-  };
-
-  const startEdit = (cat) => {
-    setEditingId(cat.id);
-    setEditingPattern(cat.pattern || '');
-  };
-
-  const handleSavePattern = async (id) => {
-    try {
-      await updateCategoryPattern(id, editingPattern);
-      setEditingId(null);
-      load();
-    } catch {
-      setError('Erreur lors de la sauvegarde');
-    }
-  };
-
-  const handleTypeChange = async (id, type) => {
-    try {
-      await updateCategoryType(id, type);
-      setCategories((prev) => prev.map((c) => c.id === id ? { ...c, type: type || null } : c));
-    } catch {
-      setError('Erreur lors de la mise à jour du type');
-    }
-  };
+  const filtered = filter
+    ? categories.filter((c) => c.libelle.toLowerCase().includes(filter.toLowerCase()))
+    : categories;
 
   return (
-    <div className="card">
-      <h3>Catégories</h3>
+    <div className="card table-card">
       {error && <div className="error">{error}</div>}
 
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '1rem' }}>
-        <div>
-          <label>Nom</label>
-          <input
-            type="text"
-            placeholder="ex : Courses"
-            value={newLibelle}
-            onChange={(e) => setNewLibelle(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
-        </div>
-        <div>
-          <label>Mot clé</label>
-          <input
-            type="text"
-            placeholder="ex : LECLERC"
-            value={newPattern}
-            onChange={(e) => setNewPattern(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-          />
-        </div>
-        <div>
-          <label>Type</label>
-          <TypeSelect value={newType} onChange={setNewType} />
-        </div>
-        <button onClick={handleAdd}>Ajouter</button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '0.75rem' }}>
+        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{categories.length} catégorie{categories.length !== 1 ? 's' : ''}</span>
+        <input
+          type="text"
+          placeholder="Filtrer par nom…"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          style={{ width: 200, fontSize: '0.85rem' }}
+        />
       </div>
 
-      {categories.length === 0 ? (
-        <p>Aucune catégorie enregistrée.</p>
+      {filtered.length === 0 ? (
+        <p style={{ color: '#64748b' }}>{filter ? 'Aucune catégorie correspondante.' : 'Aucune catégorie enregistrée.'}</p>
       ) : (
         <table>
           <thead>
             <tr>
               <th>Nom</th>
-              <th>Mot clé</th>
               <th>Type</th>
-              <th>Actions</th>
+              <th>Présent dans les portefeuilles</th>
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat) => (
-              <tr key={cat.id}>
-                <td>{cat.libelle}</td>
-                <td>
-                  {editingId === cat.id ? (
-                    <input
-                      type="text"
-                      value={editingPattern}
-                      onChange={(e) => setEditingPattern(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSavePattern(cat.id)}
-                      autoFocus
-                    />
-                  ) : (
-                    <span>{cat.pattern || <em style={{ opacity: 0.5 }}>—</em>}</span>
-                  )}
-                </td>
-                <td>
-                  <TypeSelect value={cat.type} onChange={(type) => handleTypeChange(cat.id, type)} />
-                </td>
-                <td style={{ display: 'flex', gap: '0.4rem' }}>
-                  {editingId === cat.id ? (
-                    <>
-                      <button onClick={() => handleSavePattern(cat.id)}>Sauver</button>
-                      <button onClick={() => setEditingId(null)}>Annuler</button>
-                    </>
-                  ) : (
-                    <>
-                      <button onClick={() => startEdit(cat)}>Modifier mot clé</button>
-                      <button onClick={() => handleDelete(cat.id)} style={{ color: '#c0392b' }}>
-                        Supprimer
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
+            {filtered.map((cat) => (
+              <CategoryRow
+                key={cat.id}
+                cat={cat}
+                allPortfolios={allPortfolios}
+                onRefresh={load}
+              />
             ))}
           </tbody>
         </table>
@@ -184,8 +148,8 @@ function Settings() {
     try {
       await deleteAllCategories();
       setShowConfirm(false);
+      window.location.reload();
     } catch {
-      setMessage('Erreur lors de la suppression.');
       setShowConfirm(false);
     }
   };
@@ -228,7 +192,7 @@ function Settings() {
         </div>
       )}
 
-      <CategoriesCrud />
+      <CategoriesTable />
 
       <div className="card">
         <h3>Mois disponibles</h3>

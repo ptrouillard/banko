@@ -19,10 +19,27 @@ router.get('/suggest', (req, res) => {
   return res.json(rows.map((r) => r.libelle));
 });
 
-// Liste toutes les catégories
+// Liste toutes les catégories avec leurs portefeuilles associés
 router.get('/', (req, res) => {
-  const rows = db.prepare('SELECT id, libelle, pattern, type FROM categories ORDER BY libelle').all();
-  return res.json(rows);
+  const categories = db.prepare('SELECT id, libelle, pattern, type FROM categories ORDER BY libelle').all();
+
+  const links = db.prepare(`
+    SELECT pc.categorie_id, p.id AS port_id, p.nom AS port_nom
+    FROM portefeuille_categories pc
+    JOIN portefeuilles p ON p.id = pc.portefeuille_id
+    ORDER BY p.nom
+  `).all();
+
+  const portfolioMap = new Map();
+  for (const link of links) {
+    if (!portfolioMap.has(link.categorie_id)) portfolioMap.set(link.categorie_id, []);
+    portfolioMap.get(link.categorie_id).push({ id: link.port_id, nom: link.port_nom });
+  }
+
+  return res.json(categories.map((cat) => ({
+    ...cat,
+    portfolios: portfolioMap.get(cat.id) || [],
+  })));
 });
 
 // Crée une nouvelle catégorie
