@@ -23,7 +23,7 @@ function formatLabel(label, granularity) {
   return `${parts[2]}/${parts[1]}`;
 }
 
-function CashflowChart({ points, initialBalance, granularity }) {
+function CashflowChart({ points, currentBalance, granularity }) {
   const W = 800, H = 300;
   const PAD = { top: 20, right: 20, bottom: 48, left: 76 };
   const cW = W - PAD.left - PAD.right;
@@ -31,8 +31,11 @@ function CashflowChart({ points, initialBalance, granularity }) {
   const chartTop = PAD.top;
   const chartBottom = PAD.top + cH;
 
-  // Compute cumulative balance from initial balance
-  let running = initialBalance;
+  // Compute start balance by working backwards from current balance
+  const periodNet = points.reduce((s, p) => s + p.net, 0);
+  const startBalance = currentBalance - periodNet;
+
+  let running = startBalance;
   const data = points.map(({ label, net }) => {
     running += net;
     return { label, balance: Math.round(running * 100) / 100 };
@@ -85,12 +88,10 @@ function CashflowChart({ points, initialBalance, granularity }) {
     return acc;
   }, []);
 
-  const lastBalance = data[data.length - 1].balance;
-
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem', gap: '1rem', fontSize: '0.85rem', color: '#64748b' }}>
-        <span>Solde final estimé : <strong style={{ color: lastBalance < 0 ? '#b91c1c' : '#166534' }}>{formatAmount(lastBalance)}</strong></span>
+        <span>Solde en début de période : <strong style={{ color: startBalance < 0 ? '#b91c1c' : '#166534' }}>{formatAmount(startBalance)}</strong></span>
       </div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
         <defs>
@@ -151,11 +152,11 @@ function SuiviFlux() {
   const [granularity, setGranularity] = useState('day');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [initialBalance, setInitialBalance] = useState(
-    () => parseFloat(localStorage.getItem('banko_initial_balance') || '0')
+  const [currentBalance, setCurrentBalance] = useState(
+    () => parseFloat(localStorage.getItem('banko_current_balance') || '0')
   );
   const [balanceInput, setBalanceInput] = useState(
-    () => localStorage.getItem('banko_initial_balance') || '0'
+    () => localStorage.getItem('banko_current_balance') || '0'
   );
 
   const load = useCallback(() => {
@@ -174,8 +175,8 @@ function SuiviFlux() {
 
   const commitBalance = () => {
     const val = parseFloat(String(balanceInput).replace(',', '.')) || 0;
-    setInitialBalance(val);
-    localStorage.setItem('banko_initial_balance', String(val));
+    setCurrentBalance(val);
+    localStorage.setItem('banko_current_balance', String(val));
   };
 
   return (
@@ -185,7 +186,7 @@ function SuiviFlux() {
       <div className="card" style={{ marginBottom: '1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           <label style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569', whiteSpace: 'nowrap' }}>
-            Solde initial :
+            Solde actuel :
           </label>
           <input
             type="text"
@@ -196,7 +197,7 @@ function SuiviFlux() {
             style={{ width: '140px', textAlign: 'right' }}
             placeholder="0"
           />
-          <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>€ — solde du compte avant la première opération importée</span>
+          <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>€ — solde du compte tel qu'affiché dans votre appli bancaire aujourd'hui</span>
         </div>
       </div>
 
@@ -219,7 +220,7 @@ function SuiviFlux() {
         {loading ? (
           <p>Chargement…</p>
         ) : (
-          <CashflowChart points={points} initialBalance={initialBalance} granularity={granularity} />
+          <CashflowChart points={points} currentBalance={currentBalance} granularity={granularity} />
         )}
       </div>
     </div>

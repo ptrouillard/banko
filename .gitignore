@@ -1,3 +1,4 @@
+.env.deploy
 node_modules
 dist
 build
