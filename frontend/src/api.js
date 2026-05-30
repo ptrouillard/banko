@@ -19,7 +19,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('banko_token');
       localStorage.removeItem('banko_user');
-      window.location.href = '/login';
+      window.location.href = import.meta.env.BASE_URL + 'login';
     }
     return Promise.reject(error);
   }

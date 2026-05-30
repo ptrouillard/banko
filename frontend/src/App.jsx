@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login.jsx';
 import UploadPage from './pages/UploadPage.jsx';
 import Analysis from './pages/Analysis.jsx';
@@ -20,14 +20,15 @@ import { I18nProvider, useTranslation } from './i18n.js';
 
 function AppInner() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const [user, setUser] = useState(localStorage.getItem('banko_user'));
 
   useEffect(() => {
-    if (!user && window.location.pathname !== '/login') {
+    if (!user && location.pathname !== '/login') {
       navigate('/login');
     }
-  }, [user, navigate]);
+  }, [user, navigate, location.pathname]);
 
   const logout = () => {
     localStorage.removeItem('banko_token');

@@ -1,4 +1,5 @@
-import Database from 'better-sqlite3';
+import nodeWasm from 'node-sqlite3-wasm';
+const { Database } = nodeWasm;
 import path from 'path';
 import { fileURLToPath } from 'url';
 

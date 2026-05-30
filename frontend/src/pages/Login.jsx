@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, register } from '../api.js';
+import { login } from '../api.js';
 import { useTranslation } from '../i18n.js';
 
 function Login({ onLogin }) {
@@ -8,13 +8,12 @@ function Login({ onLogin }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = isRegister ? await register(username, password) : await login(username, password);
+      const response = await login(username, password);
       const token = response.data.token;
       if (!token) {
         throw new Error(t('invalidToken'));
@@ -32,18 +31,15 @@ function Login({ onLogin }) {
     <div className="page page-center">
       <div className="card">
         <h1>Banko</h1>
-        <p>{isRegister ? t('createAccount') : t('login')}</p>
+        <p>{t('login')}</p>
         <form onSubmit={handleSubmit}>
           <label>{t('username')}</label>
           <input value={username} onChange={(e) => setUsername(e.target.value)} />
           <label>{t('password')}</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           {error && <div className="error">{error}</div>}
-          <button type="submit">{isRegister ? t('create') : t('login')}</button>
+          <button type="submit">{t('login')}</button>
         </form>
-        <button className="secondary" onClick={() => setIsRegister((current) => !current)}>
-          {isRegister ? t('alreadyAccount') : t('noAccount')}
-        </button>
       </div>
     </div>
   );
