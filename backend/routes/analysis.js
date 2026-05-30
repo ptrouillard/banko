@@ -43,11 +43,11 @@ router.post('/expense/:id/category', (req, res) => {
   if (!categorie) return res.status(400).json({ error: 'Catégorie requise' });
 
   const cat = String(categorie).trim();
-  db.prepare('UPDATE data SET categorie = ? WHERE id = ?').run(cat, id);
+  db.prepare('UPDATE data SET categorie = ? WHERE id = ?').run([cat, id]);
 
   // Enregistre automatiquement la catégorie dans la table categories si inconnue
   try {
-    db.prepare('INSERT OR IGNORE INTO categories (libelle, pattern) VALUES (?, ?)').run(cat, '');
+    db.prepare('INSERT OR IGNORE INTO categories (libelle, pattern) VALUES (?, ?)').run([cat, '']);
   } catch { /* ignore */ }
 
   return res.json({ success: true, id, categorie: cat });

@@ -137,7 +137,7 @@ router.post('/', upload.single('file'), (req, res) => {
       let cat = db.prepare('SELECT id FROM categories WHERE libelle = ?').get(libelle);
       if (!cat) {
         const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
-        const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(libelle, '', validType);
+        const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run([libelle, '', validType]);
         cat = { id: info.lastInsertRowid };
       }
       categoryCache.set(libelle, cat.id);
@@ -190,7 +190,7 @@ router.post('/', upload.single('file'), (req, res) => {
         continue;
       }
 
-      const existing = getExisting.get(normalizedDate, libelle);
+      const existing = getExisting.get([normalizedDate, libelle]);
       // Doublon réel : la ligne existe et a déjà des montants corrects
       if (existing && (existing.debit !== 0 || existing.credit !== 0)) {
         duplicates += 1;
@@ -208,13 +208,13 @@ router.post('/', upload.single('file'), (req, res) => {
 
         if (ruleMatch.portefeuille) {
           const pfId = getOrCreatePortfolio(ruleMatch.portefeuille);
-          linkCatPortfolio.run(pfId, autoCategId);
+          linkCatPortfolio.run([pfId, autoCategId]);
         }
 
         autoCategorized += 1;
       }
 
-      insert.run(normalizedDate, libelle, raw.debit, raw.credit, now, autoCategId, autoCat);
+      insert.run([normalizedDate, libelle, raw.debit, raw.credit, now, autoCategId, autoCat]);
       imported += 1;
 
       // Enregistrement du mois (format YYYY-MM)

@@ -13,13 +13,13 @@ router.get('/', (req, res) => {
   const where = search ? "WHERE libelle LIKE ? OR date LIKE ?" : "";
   const params = search ? [search, search] : [];
 
-  const total = db.prepare(`SELECT COUNT(*) AS count FROM data ${where}`).get(...params).count;
+  const total = db.prepare(`SELECT COUNT(*) AS count FROM data ${where}`).get(params).count;
   const rows = db.prepare(`
     SELECT id, date, libelle, debit, credit, date_import, categorie
     FROM data ${where}
     ORDER BY date DESC, id DESC
     LIMIT ? OFFSET ?
-  `).all(...params, limit, offset);
+  `).all([...params, limit, offset]);
 
   return res.json({ rows, total, page, limit });
 });

@@ -50,11 +50,11 @@ router.post('/', (req, res) => {
   }
   const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
   try {
-    const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(
+    const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run([
       libelle.trim(),
       pattern ? pattern.trim() : '',
-      validType
-    );
+      validType,
+    ]);
     return res.json({ id: info.lastInsertRowid, libelle: libelle.trim(), pattern: pattern || '', type: validType });
   } catch {
     return res.status(409).json({ error: 'Cette catégorie existe déjà' });
@@ -82,7 +82,7 @@ router.patch('/:id', (req, res) => {
   if (updates.length === 0) return res.status(400).json({ error: 'Aucun champ à mettre à jour' });
 
   params.push(id);
-  const info = db.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+  const info = db.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).run(params);
   if (info.changes === 0) return res.status(404).json({ error: 'Catégorie introuvable' });
   return res.json({ success: true });
 });

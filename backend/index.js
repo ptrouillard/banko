@@ -45,6 +45,10 @@ if (process.env.NODE_ENV === 'production') {
   app.get(B + '/*', (req, res) => res.sendFile(path.join(frontendDist, 'index.html')));
 }
 
-app.listen(port, () => {
-  console.log(`Backend démarré sur http://localhost:${port}`);
-});
+export default app;
+
+if (!process.env.VITEST) {
+  app.listen(port, () => {
+    console.log(`Backend démarré sur http://localhost:${port}`);
+  });
+}

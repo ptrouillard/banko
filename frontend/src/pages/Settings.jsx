@@ -6,7 +6,6 @@ import {
   fetchPortefeuilles,
   addCategoryToPortefeuille,
   removeCategoryFromPortefeuille,
-  register,
 } from '../api.js';
 
 const TYPE_LABELS = { depense: 'Dépenses', recette: 'Recettes', interne: 'Interne' };
@@ -140,37 +139,6 @@ function CategoriesTable() {
   );
 }
 
-function CreateUserCard() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      await register(username, password);
-      setMessage(`✓ Utilisateur « ${username} » créé.`);
-      setUsername('');
-      setPassword('');
-    } catch (err) {
-      setMessage(err.response?.data?.error || 'Erreur lors de la création.');
-    }
-  };
-
-  return (
-    <div className="card">
-      <h3>Créer un utilisateur</h3>
-      <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: 300 }}>
-        <input placeholder="Pseudo" value={username} onChange={(e) => setUsername(e.target.value)} required />
-        <input type="password" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">Créer</button>
-      </form>
-      {message && <p style={{ marginTop: '0.75rem' }}>{message}</p>}
-    </div>
-  );
-}
-
 function Settings() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -225,8 +193,6 @@ function Settings() {
       )}
 
       <CategoriesTable />
-
-      {localStorage.getItem('banko_user') === 'pedro' && <CreateUserCard />}
 
       <div className="card">
         <h3>Mois disponibles</h3>

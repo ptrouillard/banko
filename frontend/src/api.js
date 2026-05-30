@@ -32,6 +32,18 @@ export async function login(username, password) {
 export async function register(username, password) {
   return api.post('/auth/register', { username, password });
 }
+export async function fetchUsers() {
+  return api.get('/auth/users');
+}
+export async function blockUser(id) {
+  return api.post(`/auth/users/${id}/block`);
+}
+export async function deleteUser(id) {
+  return api.delete(`/auth/users/${id}`);
+}
+export async function changeUserPassword(id, password) {
+  return api.put(`/auth/users/${id}/password`, { password });
+}
 
 // Upload
 export async function uploadFile(file) {

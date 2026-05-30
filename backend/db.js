@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS data (
 
 db.exec(`CREATE INDEX IF NOT EXISTS idx_data_categorie ON data(categorie);`);
 
+// Migrations users
+try { db.exec("ALTER TABLE users ADD COLUMN last_login TEXT"); } catch {}
+try { db.exec("ALTER TABLE users ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0"); } catch {}
+
 // Migration : ajout de categorie_id (FK vers categories)
 try {
   db.exec('ALTER TABLE data ADD COLUMN categorie_id INTEGER REFERENCES categories(id)');

@@ -23,7 +23,7 @@ router.get('/uncategorized', (req, res) => {
     WHERE categorie_id IS NULL
     ORDER BY id DESC
     LIMIT ? OFFSET ?
-  `).all(limit, offset);
+  `).all([limit, offset]);
 
   return res.json({ rows, total, page, totalPages: Math.ceil(total / limit) || 1 });
 });
@@ -47,13 +47,13 @@ router.post('/apply', (req, res) => {
     const { type } = req.body;
     const validType = ['depense', 'recette', 'interne'].includes(type) ? type : null;
     try {
-      const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run(name, kw, validType);
+      const info = db.prepare('INSERT INTO categories (libelle, pattern, type) VALUES (?, ?, ?)').run([name, kw, validType]);
       catId = info.lastInsertRowid;
     } catch {
       const existing = db.prepare('SELECT id FROM categories WHERE libelle = ?').get(name);
       if (!existing) return res.status(500).json({ error: 'Erreur lors de la création de la catégorie' });
       catId = existing.id;
-      db.prepare('UPDATE categories SET pattern = ?, type = ? WHERE id = ?').run(kw, validType, catId);
+      db.prepare('UPDATE categories SET pattern = ?, type = ? WHERE id = ?').run([kw, validType, catId]);
     }
   }
 
@@ -66,13 +66,13 @@ router.post('/apply', (req, res) => {
     SET categorie_id = ?, categorie = ?
     WHERE categorie_id IS NULL
     AND UPPER(libelle) LIKE '%' || UPPER(?) || '%'
-  `).run(cat.id, cat.libelle, kw);
+  `).run([cat.id, cat.libelle, kw]);
 
   // Forcer la catégorisation de l'opération sélectionnée si elle n'a pas matché (keyword différent du libellé)
   const check = db.prepare('SELECT categorie_id FROM data WHERE id = ?').get(operation_id);
   let extra = 0;
   if (!check?.categorie_id) {
-    db.prepare('UPDATE data SET categorie_id = ?, categorie = ? WHERE id = ?').run(cat.id, cat.libelle, operation_id);
+    db.prepare('UPDATE data SET categorie_id = ?, categorie = ? WHERE id = ?').run([cat.id, cat.libelle, operation_id]);
     extra = 1;
   }
 

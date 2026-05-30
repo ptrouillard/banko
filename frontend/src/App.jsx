@@ -15,6 +15,7 @@ import Language from './pages/Language.jsx';
 import Categorisation from './pages/Categorisation.jsx';
 import Portefeuilles from './pages/Portefeuilles.jsx';
 import Settings from './pages/Settings.jsx';
+import Users from './pages/Users.jsx';
 import DataControl from './pages/DataControl.jsx';
 import { I18nProvider, useTranslation } from './i18n.js';
 
@@ -69,6 +70,7 @@ function AppInner() {
           <NavLink to="/settings">Catégories</NavLink>
           <NavLink to="/language">{t('language')}</NavLink>
           <NavLink to="/data">Données</NavLink>
+          {user === 'pedro' && <NavLink to="/users">Utilisateurs</NavLink>}
           <button className="link-button" onClick={logout}>{t('logout')}</button>
         </nav>
       </aside>
@@ -94,6 +96,7 @@ function AppInner() {
           <Route path="/settings" element={<Settings />} />
           <Route path="/language" element={<Language />} />
           <Route path="/data" element={<DataControl />} />
+          <Route path="/users" element={<Users />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

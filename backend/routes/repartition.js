@@ -28,7 +28,7 @@ function getSlices(amountCol, monthFilter, month) {
       AND (c.type IS NULL OR c.type != 'interne')
     ${whereMonth}
     ORDER BY d.date DESC
-  `).all(...params);
+  `).all(params);
 
   const portfolioMap = new Map();
 

@@ -92,7 +92,7 @@ router.get('/:id/detail', (req, res) => {
     WHERE c.id IN (${placeholders})
     ${monthFilter}
     ORDER BY d.date DESC
-  `).all(...queryParams);
+  `).all(queryParams);
 
   const total_debit = operations.reduce((s, o) => s + (o.debit || 0), 0);
   const total_credit = operations.reduce((s, o) => s + (o.credit || 0), 0);
@@ -119,7 +119,7 @@ router.post('/:id/categories', (req, res) => {
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
 
   try {
-    db.prepare('INSERT INTO portefeuille_categories (portefeuille_id, categorie_id) VALUES (?, ?)').run(id, categorie_id);
+    db.prepare('INSERT INTO portefeuille_categories (portefeuille_id, categorie_id) VALUES (?, ?)').run([id, categorie_id]);
     return res.json({ success: true });
   } catch {
     return res.status(409).json({ error: 'Cette catégorie est déjà dans ce portefeuille' });
@@ -133,7 +133,7 @@ router.delete('/:id/categories/:cat_id', (req, res) => {
   const p = db.prepare('SELECT * FROM portefeuilles WHERE id = ?').get(id);
   if (!p) return res.status(404).json({ error: 'Portefeuille introuvable' });
 
-  db.prepare('DELETE FROM portefeuille_categories WHERE portefeuille_id = ? AND categorie_id = ?').run(id, cat_id);
+  db.prepare('DELETE FROM portefeuille_categories WHERE portefeuille_id = ? AND categorie_id = ?').run([id, cat_id]);
   return res.json({ success: true });
 });
 
